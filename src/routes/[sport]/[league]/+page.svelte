@@ -23,6 +23,8 @@
 	let seasons = $derived([...new Set(data.sources.map((source) => source.season))].join(', '));
 	let examples = $derived(exampleQuestions(data.sport));
 	let sourceName = $derived(data.sources[0]?.name ?? '');
+	// asksLeft is null when there's no daily limit (local development).
+	let outOfAsks = $derived(data.asksLeft === 0);
 
 	// use:enhance submits the form with fetch instead of a full page load.
 	// Returning a callback lets us run code when the response arrives.
@@ -63,6 +65,15 @@
 	</ul>
 {/snippet}
 
+{#snippet limitCard()}
+	<div class="rounded-xl bg-muted p-6">
+		<p class="text-lg font-bold">That's your {data.asksPerDay} questions for today.</p>
+		<p class="mt-2 text-muted-foreground">
+			Each visitor gets {data.asksPerDay} free questions a day. Come back tomorrow for more.
+		</p>
+	</div>
+{/snippet}
+
 <div class="motion-stagger">
 	<h1 class="font-display text-3xl font-black tracking-tight sm:text-4xl">
 		{leagueName(data.league)}
@@ -89,17 +100,24 @@
 		placeholder="Ask a rules question…"
 		maxlength={500}
 		required
+		disabled={outOfAsks}
 		autocomplete="off"
 		class="h-auto min-w-0 flex-1 rounded-full bg-card px-4 py-3 text-base focus-visible:border-sport focus-visible:ring-sport-soft md:text-base"
 	/>
 	<Button
 		type="submit"
-		disabled={asking}
+		disabled={asking || outOfAsks}
 		class="motion-submit h-auto rounded-full bg-sport px-5 font-bold text-sport-foreground hover:bg-sport/90 disabled:opacity-60"
 	>
 		Ask
 	</Button>
 </form>
+
+{#if data.asksLeft !== null}
+	<p class="mt-2 pl-4 text-xs text-muted-foreground">
+		{data.asksLeft} of {data.asksPerDay} free questions left today
+	</p>
+{/if}
 
 <!-- aria-live announces new content to screen readers when the answer arrives. -->
 <section aria-live="polite" class="page-enter mt-8">
@@ -115,6 +133,8 @@
 				<div class="calm-line h-0.5 w-[60%] bg-sport"></div>
 			</div>
 		</div>
+	{:else if form?.limitReached}
+		{@render limitCard()}
 	{:else if form?.error}
 		<div class="rounded-lg border border-destructive/40 p-6" role="alert">
 			<p class="font-bold">Something went wrong on our end.</p>
@@ -130,7 +150,9 @@
 				Try fewer words, or name the moment you saw, like "ball hits the net on a serve." Here are some
 				that work:
 			</p>
-			<div class="mt-4">{@render exampleChips()}</div>
+			{#if !outOfAsks}
+				<div class="mt-4">{@render exampleChips()}</div>
+			{/if}
 		</div>
 	{:else if form?.result}
 		{@const result = form.result}
@@ -174,6 +196,8 @@
 				</ul>
 			</details>
 		</article>
+	{:else if outOfAsks}
+		{@render limitCard()}
 	{:else}
 		<h2 class="mb-3 text-xs font-bold tracking-widest text-muted-foreground uppercase">Try asking</h2>
 		{@render exampleChips()}
