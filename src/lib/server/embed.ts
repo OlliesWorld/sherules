@@ -64,6 +64,8 @@ export function createEmbedder(apiKey: string) {
 	return { embedAll, embedOne: async (input: string) => (await embedBatch([input]))[0] };
 }
 
+export type Embedder = ReturnType<typeof createEmbedder>;
+
 async function withRetry<T>(task: () => Promise<T>): Promise<T> {
 	for (let attempt = 1; ; attempt++) {
 		try {

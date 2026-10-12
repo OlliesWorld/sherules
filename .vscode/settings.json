@@ -40,5 +40,8 @@
         "activityBar.activeBorder": "#651bc0",
         "activityBarBadge.foreground": "#ffffff",
         "activityBarBadge.background": "#651bc0"
+    },
+    "files.associations": {
+        "*.css": "tailwindcss"
     }
 }

@@ -1,0 +1,335 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+/* `dark:` classes apply when <html> has class="dark". mode-watcher (in +layout.svelte)
+   adds or removes that class from the user's choice or their system setting. */
+@custom-variant dark (&:is(.dark *));
+
+/* ============ Design tokens ============
+   shadcn's names (--background, --card, --muted, ...) so shadcn components pick them up,
+   plus --sport: the accent color for the current sport.
+   Every text color here is at least 4.5:1 against the backgrounds it sits on (WCAG AA). */
+
+/* Light theme (the default before mode-watcher decides). */
+:root {
+	--radius: 0.75rem;
+
+	--background: oklch(98.5% 0.006 95);
+	--foreground: oklch(20% 0.03 255);
+	--card: oklch(100% 0 0);
+	--card-foreground: var(--foreground);
+	--popover: var(--card);
+	--popover-foreground: var(--foreground);
+	--primary: var(--foreground);
+	--primary-foreground: var(--background);
+	--secondary: oklch(95.5% 0.01 255);
+	--secondary-foreground: var(--foreground);
+	--muted: var(--secondary);
+	--muted-foreground: oklch(47% 0.02 255);
+	--accent: var(--secondary);
+	--accent-foreground: var(--foreground);
+	--destructive: oklch(55% 0.19 28);
+	--destructive-foreground: oklch(100% 0 0);
+	--border: oklch(90% 0.012 255);
+	--input: oklch(86% 0.015 255);
+	--ring: var(--sport);
+
+	/* Sport accent lightness for this theme: dark enough to read on white. */
+	--sport-l: 50%;
+	--sport-foreground: oklch(100% 0 0);
+
+	/* Rule cards: a light wash of the sport color over white (more on hover). */
+	--rule-card-base: var(--card);
+	--rule-card-mix: 7%;
+	--rule-card-hover-mix: 11%;
+}
+
+/* Dark theme (the original design). */
+.dark {
+	--background: oklch(16% 0.025 255);
+	--foreground: oklch(96% 0.008 95);
+	--card: oklch(20% 0.03 255);
+	--secondary: oklch(24% 0.03 255);
+	--muted-foreground: oklch(72% 0.02 255);
+	--destructive: oklch(70% 0.17 28);
+	--destructive-foreground: var(--background);
+	--border: oklch(30% 0.03 255);
+	--input: oklch(34% 0.03 255);
+
+	/* Lighter accent so it glows on navy. */
+	--sport-l: 72%;
+	--sport-foreground: var(--background);
+
+	/* Rule cards stay the plain muted panel from the original design. */
+	--rule-card-base: var(--muted);
+	--rule-card-mix: 0%;
+	--rule-card-hover-mix: 10%;
+}
+
+/* One accent per sport: each sport sets its color (chroma + hue), each theme sets
+   the lightness, so every sport works in both themes. Layout and type never change. */
+:root,
+[data-sport='volleyball'] {
+	--sport-c: 0.12;
+	--sport-h: 190; /* teal */
+}
+
+[data-sport='basketball'] {
+	--sport-c: 0.15;
+	--sport-h: 55; /* orange */
+}
+
+/* Built from the parts above. Declared on [data-sport] too, so each sport section recomputes them. */
+:root,
+[data-sport] {
+	--sport: oklch(var(--sport-l) var(--sport-c) var(--sport-h));
+	--sport-soft: oklch(var(--sport-l) var(--sport-c) var(--sport-h) / 0.15);
+	--shadow-sport: 0 8px 24px oklch(var(--sport-l) var(--sport-c) var(--sport-h) / 0.12);
+}
+
+/* Makes the tokens usable as Tailwind classes: bg-card, text-muted-foreground, bg-sport, ... */
+@theme inline {
+	--font-sans: 'Sora', system-ui, sans-serif;
+	--font-display: 'Archivo', 'Sora', system-ui, sans-serif;
+	--font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-destructive-foreground: var(--destructive-foreground);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--color-sport: var(--sport);
+	--color-sport-soft: var(--sport-soft);
+	--color-sport-foreground: var(--sport-foreground);
+}
+
+@layer base {
+	* {
+		@apply border-border;
+	}
+
+	body {
+		@apply bg-background font-sans text-foreground antialiased;
+	}
+
+	:focus-visible {
+		outline: 2px solid var(--sport);
+		outline-offset: 2px;
+	}
+}
+
+/* ============ Decoration and motion (from the design) ============ */
+@utility hero-glow {
+	background-image: radial-gradient(ellipse 60% 50% at 20% 0%, var(--sport-soft), transparent 70%);
+}
+
+@utility calm-halo {
+	background: radial-gradient(circle, var(--sport-soft), transparent 65%);
+	animation: halo-breathe 7s ease-in-out infinite;
+}
+
+@utility calm-line {
+	transform-origin: 0;
+	animation: calm-pulse 1.6s ease-in-out infinite;
+}
+
+@utility motion-ball {
+	animation: ball-drift 8s ease-in-out infinite;
+}
+
+@utility motion-nudge {
+	animation: ball-nudge 1.6s ease-in-out infinite;
+}
+
+/* Fade-and-rise on page load; children of .motion-stagger arrive one after another. */
+@utility page-enter {
+	animation: signal-enter 0.48s ease-out both;
+}
+
+@utility motion-stagger {
+	& > * {
+		animation: signal-enter 0.48s ease-out both;
+	}
+	& > :nth-child(2) {
+		animation-delay: 60ms;
+	}
+	& > :nth-child(3) {
+		animation-delay: 120ms;
+	}
+	& > :nth-child(4) {
+		animation-delay: 180ms;
+	}
+	& > :nth-child(5) {
+		animation-delay: 240ms;
+	}
+	& > :nth-child(n + 6) {
+		animation-delay: 300ms;
+	}
+}
+
+/* Underline that grows in on hover. */
+@utility calm-link {
+	background-image: linear-gradient(currentColor, currentColor);
+	background-position: 0 100%;
+	background-repeat: no-repeat;
+	background-size: 0% 1px;
+	transition:
+		background-size 0.25s,
+		color 0.2s;
+	&:hover {
+		/* background-size: 100% 1px; */
+	}
+}
+
+/* Cards and chips you can pick: lift and pick up the sport color on hover. */
+@utility motion-choice {
+	transition:
+		transform 0.22s,
+		border-color 0.22s,
+		background-color 0.22s,
+		box-shadow 0.22s;
+	&:hover {
+		border-color: var(--sport);
+		box-shadow: var(--shadow-sport);
+		transform: translateY(-3px);
+	}
+	&:active {
+		transform: translateY(0) scale(0.98);
+	}
+}
+
+/* Background of the "From the rulebook" cards. Mix amounts are set per theme above. */
+@utility rule-card {
+	background-color: color-mix(in oklab, var(--sport) var(--rule-card-mix), var(--rule-card-base));
+}
+
+@utility motion-rule {
+	transition:
+		transform 0.22s,
+		border-color 0.22s,
+		background-color 0.22s,
+		box-shadow 0.22s;
+	&:hover {
+		border-color: var(--sport);
+		background-color: color-mix(in oklab, var(--sport) var(--rule-card-hover-mix), var(--rule-card-base));
+		box-shadow: var(--shadow-sport);
+		transform: translateY(-3px);
+	}
+}
+
+@utility motion-submit {
+	transition:
+		transform 0.18s,
+		background-color 0.18s,
+		box-shadow 0.18s;
+	&:hover {
+		box-shadow: var(--shadow-sport);
+		transform: translateY(-2px);
+	}
+	&:active {
+		transform: scale(0.96);
+	}
+}
+
+@keyframes calm-pulse {
+	0%,
+	100% {
+		opacity: 0.25;
+		transform: scaleX(0.4);
+	}
+	50% {
+		opacity: 1;
+		transform: scaleX(1);
+	}
+}
+
+@keyframes signal-enter {
+	from {
+		opacity: 0;
+		transform: translateY(12px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes ball-drift {
+	0%,
+	100% {
+		transform: translateY(0) rotate(-8deg);
+	}
+	50% {
+		transform: translateY(-10px) rotate(8deg);
+	}
+}
+
+@keyframes halo-breathe {
+	0%,
+	100% {
+		opacity: 0.4;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.85;
+		transform: scale(1.07);
+	}
+}
+
+@keyframes ball-nudge {
+	0%,
+	100% {
+		transform: translateY(0) rotate(-6deg);
+	}
+	50% {
+		transform: translateY(-5px) rotate(10deg);
+	}
+}
+
+/* Respect "reduce motion": no drifting, pulsing or lifting. */
+@media (prefers-reduced-motion: reduce) {
+	.page-enter,
+	.motion-stagger > *,
+	.motion-ball,
+	.motion-nudge,
+	.calm-line,
+	.calm-halo {
+		animation: none;
+	}
+	.calm-line,
+	.calm-halo {
+		opacity: 0.6;
+	}
+	.motion-choice,
+	.motion-rule,
+	.motion-submit,
+	.calm-link {
+		transition: none;
+	}
+	.motion-choice:hover,
+	.motion-choice:active,
+	.motion-rule:hover,
+	.motion-submit:hover,
+	.motion-submit:active {
+		transform: none;
+	}
+}
