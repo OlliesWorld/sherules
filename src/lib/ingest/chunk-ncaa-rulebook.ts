@@ -1,46 +1,34 @@
-import type { PageProblem, PageRange, ParsedChunk, ParseResult, Source } from './types.ts';
+import {
+	addChunk as addSharedChunk,
+	clean,
+	collectLines,
+	isAllCaps,
+	openChunk,
+	rulePath,
+	type Line,
+	type OpenChunk
+} from './pdf-lines.ts';
+import type { PageProblem, ParsedChunk, ParseResult, Source } from './types.ts';
 
-// Chunker for NCAA rulebooks laid out as:
+// Chunker for NCAA rulebooks laid out with numbered headings (e.g. volleyball):
 //   RULE 1                     rule
 //   Facilities and Equipment   rule title (one or two lines)
 //   1.2 THE COURT              section (title in caps)
 //   1.2.2 Court Markings       article  <- one chunk per article
 //   1�2�2�1 ...                numbered text inside the article
 //
-// The PDF's body font has no period glyph, so the text extractor returns "�" (U+FFFD)
-// wherever a period should be. Headings use a different font with a real period.
+// Headings print with a real period; body text prints "�" for periods (see clean()).
 // That is what tells "1.2.2 Court Markings" (a heading) apart from "1�2�2�1 ..." (text).
-// Patterns run on the raw line, and "�" is turned back into "." only after that.
 
 const RULE_HEADING = /^RULE (\d+)$/;
 const SECTION_HEADING = /^(\d+)\.(\d+) (.+)$/;
 const ARTICLE_HEADING = /^(\d+)\.(\d+)\.(\d+) (.+)$/;
 const TABLE_START = /^Table (\d+)(?::\s*(.+))?$/; // "Table 1" or "Table 2: Prematch Protocol"
-const SUB_ITEM = /^\d+�\d+�\d+�\d+/; // "9�1�1�1 In a tournament..."
+const SUB_ITEM = /^\d+\uFFFD\d+\uFFFD\d+\uFFFD\d+/; // "9�1�1�1 In a tournament..."
 const SITUATION_START = /^SITUATION (\d+):/;
-
-// "14 RULE 1 / FACILITIES AND EqUIPMENT" or "RULE 1 / FACILITIES AND EqUIPMENT 15"
-const RUNNING_HEADER = /^(\d+ )?RULE \d+ \//;
-const PAGE_NUMBER = /^\d{1,3}$/;
-// Dotted leaders before a page number, as in a table of contents or index.
-const LEADER_LINE = /(�{4,}|\.{4,})\s*\d+$/;
 
 // When rejoining wrapped lines, these start a new line instead of continuing the previous one.
 const STARTS_NEW_LINE = /^(\d+(\.\d+){3,}\s|[a-z]\.\s|•|Note:|NOTE:)/;
-
-interface Line {
-	raw: string;
-	page: number;
-}
-
-/** A chunk while it is being filled, line by line. */
-interface OpenChunk {
-	ruleRef: string;
-	headingPath: string;
-	page: number;
-	lines: string[];
-	isTable: boolean;
-}
 
 export function parseNcaaRulebook(pages: string[], source: Source): ParseResult {
 	const chunks: ParsedChunk[] = [];
@@ -56,50 +44,6 @@ export function parseNcaaRulebook(pages: string[], source: Source): ParseResult 
 	}
 
 	return { chunks, problems };
-}
-
-/** Turns the pages in a range into a flat list of lines, dropping page furniture. */
-function collectLines(
-	pages: string[],
-	range: PageRange,
-	source: Source,
-	problems: PageProblem[]
-): Line[] {
-	const lines: Line[] = [];
-
-	for (let page = range.from; page <= range.to; page++) {
-		const skipReason = source.skipPages?.[page];
-		if (skipReason) {
-			problems.push({ page, reason: `Skipped: ${skipReason}` });
-			continue;
-		}
-
-		const pageLines = (pages[page - 1] ?? '')
-			.split('\n')
-			.map((line) => line.trim())
-			.filter((line) => line !== '');
-
-		if (pageLines.length === 0) {
-			problems.push({ page, reason: 'No text extracted (blank or image-only page)' });
-			continue;
-		}
-
-		const leaderCount = pageLines.filter((line) => LEADER_LINE.test(line)).length;
-		if (leaderCount >= 3) {
-			problems.push({ page, reason: 'Looks like a table of contents or index, skipped' });
-			continue;
-		}
-
-		// The printed page number sits alone on the first line of some pages.
-		if (PAGE_NUMBER.test(pageLines[0])) pageLines.shift();
-
-		for (const raw of pageLines) {
-			if (RUNNING_HEADER.test(raw)) continue;
-			lines.push({ raw, page });
-		}
-	}
-
-	return lines;
 }
 
 function parseRules(lines: Line[], chunks: ParsedChunk[], problems: PageProblem[]) {
@@ -273,42 +217,7 @@ function parseInterpretations(lines: Line[], chunks: ParsedChunk[], problems: Pa
 	finish();
 }
 
-function openChunk(ruleRef: string, headingPath: string, page: number): OpenChunk {
-	return { ruleRef, headingPath, page, lines: [], isTable: false };
-}
-
-/** Finalizes an open chunk. Empty ones (a section heading followed straight by an article) are dropped. */
+/** This parser's list-item pattern, passed to the shared chunk builder. */
 function addChunk(chunks: ParsedChunk[], open: OpenChunk, type: ParsedChunk['type']) {
-	// Tables keep their line breaks so each row stays on its own line.
-	const text = (open.isTable ? open.lines.join('\n') : rejoinLines(open.lines)).trim();
-	if (text === '') return;
-	chunks.push({ ruleRef: open.ruleRef, type, headingPath: open.headingPath, text, page: open.page });
-}
-
-/**
- * The PDF gives us visual lines, wrapped wherever the page ran out of width.
- * Rejoin them into paragraphs, but keep numbered items, lettered items, bullets
- * and notes on their own lines so lists stay readable.
- */
-function rejoinLines(lines: string[]): string {
-	let text = '';
-	for (const line of lines) {
-		if (text === '') text = line;
-		else if (STARTS_NEW_LINE.test(line)) text += '\n' + line;
-		else if (text.endsWith('-') || text.endsWith('—')) text += line;
-		else text += ' ' + line;
-	}
-	return text;
-}
-
-function rulePath(rule: { num: number; title: string }): string {
-	return `Rule ${rule.num} – ${rule.title}`;
-}
-
-function clean(raw: string): string {
-	return raw.replace(/�/g, '.');
-}
-
-function isAllCaps(text: string): boolean {
-	return text === text.toUpperCase() && /[A-Z]/.test(text);
+	addSharedChunk(chunks, open, type, STARTS_NEW_LINE);
 }

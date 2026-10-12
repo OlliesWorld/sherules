@@ -4,7 +4,9 @@ export type ChunkType = 'rule' | 'interpretation' | 'rule_change';
 export type Division = 'all' | 'd1' | 'd2-d3';
 
 /** Names of the parsers in scripts/ingest.ts. Add one here when a new PDF layout needs it. */
-export type ParserName = 'ncaa-rulebook';
+export type ParserName =
+	| 'ncaa-rulebook' // numbered headings: 1.2 SECTION / 1.2.3 Article (volleyball)
+	| 'ncaa-sections'; // labeled headings: SECTION 2. / Art. 3. (basketball)
 
 /** A run of pages (1-based, inclusive) that a parser should read, and what kind of content it holds. */
 export interface PageRange {

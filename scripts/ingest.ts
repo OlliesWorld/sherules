@@ -6,6 +6,7 @@
 //
 // Source ids are listed in src/lib/ingest/sources.ts.
 import { parseNcaaRulebook } from '#lib/ingest/chunk-ncaa-rulebook.ts';
+import { parseNcaaSections } from '#lib/ingest/chunk-ncaa-sections.ts';
 import { readPdfPages } from '#lib/ingest/pdf.ts';
 import { getSource, sources } from '#lib/ingest/sources.ts';
 import type { ParsedChunk, ParserName, ParseResult, Source } from '#lib/ingest/types.ts';
@@ -13,10 +14,9 @@ import { createDb, ensureSchema, replaceSourceChunks, type ChunkRow } from '#lib
 import { createEmbedder, documentInput, EMBEDDING_MODEL_TAG } from '#lib/server/embed.ts';
 
 const parsers: Record<ParserName, (pages: string[], source: Source) => ParseResult> = {
-	'ncaa-rulebook': parseNcaaRulebook
+	'ncaa-rulebook': parseNcaaRulebook,
+	'ncaa-sections': parseNcaaSections
 };
-
-const SAMPLE_REFS = ['Rule 1.2.2', 'Rule 11.3.2', 'Rule 6, Table 1', 'Rule 13, Situation 1'];
 
 async function main() {
 	const [sourceId, ...flags] = process.argv.slice(2);
@@ -99,9 +99,16 @@ function printSummary(source: Source, pageCount: number, chunks: ParsedChunk[], 
 	const longest = chunks.reduce((a, b) => (a.text.length > b.text.length ? a : b));
 	console.log(`\nWords per chunk: min ${lengths[0]}, median ${lengths[Math.floor(lengths.length / 2)]}, max ${lengths.at(-1)} (${longest.ruleRef})`);
 
+	// A spread of samples: the first chunk, one from the middle, and the first of each special kind.
+	const samples = [
+		chunks[0],
+		chunks[Math.floor(chunks.length / 2)],
+		chunks.find((c) => c.ruleRef.includes('Table')),
+		chunks.find((c) => c.ruleRef.includes('Penalty')),
+		chunks.find((c) => c.type === 'interpretation')
+	];
 	console.log(`\nSample chunks:`);
-	for (const ref of SAMPLE_REFS) {
-		const chunk = chunks.find((c) => c.ruleRef === ref);
+	for (const chunk of new Set(samples)) {
 		if (!chunk) continue;
 		console.log(`\n  [${chunk.ruleRef}]  type=${chunk.type}  page=${chunk.page}`);
 		console.log(`  heading: ${chunk.headingPath}`);

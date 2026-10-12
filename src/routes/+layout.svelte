@@ -1,6 +1,5 @@
 <script lang="ts">
 	import './layout.css';
-	import favicon from '#lib/assets/favicon.svg';
 	import Breadcrumbs, { type Crumb } from '#lib/components/Breadcrumbs.svelte';
 	import HeroDecor from '#lib/components/HeroDecor.svelte';
 	import SportIcon from '#lib/components/SportIcon.svelte';
@@ -36,7 +35,8 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
+	<!-- Files in static/ are served from the site root, so they're linked by URL, not imported. -->
+	<link rel="icon" href="/ollie_toon.ico" />
 	<title>SheRules: women's sports rules, in plain language</title>
 </svelte:head>
 

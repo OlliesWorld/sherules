@@ -23,6 +23,12 @@ const EXAMPLE_QUESTIONS: Record<string, string[]> = {
 		'What happens if the ball hits the antenna?',
 		'Can a player wear jewelry?',
 		'How does a coach’s challenge work?'
+	],
+	basketball: [
+		'How long is the shot clock?',
+		'How many fouls before a player fouls out?',
+		'What is a flagrant foul?',
+		'When does a team shoot bonus free throws?'
 	]
 };
 

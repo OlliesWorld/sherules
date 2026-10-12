@@ -72,6 +72,16 @@ export async function generateAnswer(
 		)
 	];
 
+	// Log what the model cited but we couldn't match, so a "not found" can be traced.
+	// Shows in the terminal locally and in Vercel's function logs.
+	const dropped = (parsed.citations ?? []).filter((ref) => !retrievedRefs.has(normalizeRef(ref)));
+	if (dropped.length > 0) {
+		console.warn('[answer] dropped citations not among retrieved chunks:', dropped, 'retrieved:', [...retrievedRefs.values()]);
+	}
+	if (!parsed.found) {
+		console.warn('[answer] model reported found=false');
+	}
+
 	// An answer with no valid citation isn't grounded in the rulebook, so treat it as not found.
 	if (!parsed.found || !parsed.answer || citedRefs.length === 0) {
 		return { found: false, answer: NOT_FOUND_ANSWER, citedRefs: [] };
