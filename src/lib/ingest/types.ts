@@ -6,13 +6,17 @@ export type Division = 'all' | 'd1' | 'd2-d3';
 /** Names of the parsers in scripts/ingest.ts. Add one here when a new PDF layout needs it. */
 export type ParserName =
 	| 'ncaa-rulebook' // numbered headings: 1.2 SECTION / 1.2.3 Article (volleyball)
-	| 'ncaa-sections'; // labeled headings: SECTION 2. / Art. 3. (basketball)
+	| 'ncaa-sections' // labeled headings: SECTION 2. / Art. 3. (basketball)
+	| 'fivb-rules' // FIVB layout: RULE 1. / 1.2 Sub-rule / 1.2.1: points (USA Volleyball)
+	| 'usav-casebook'; // numbered cases with Ruling and Reference (USA Volleyball casebook)
 
 /** A run of pages (1-based, inclusive) that a parser should read, and what kind of content it holds. */
 export interface PageRange {
 	from: number;
 	to: number;
 	type: ChunkType;
+	/** A glossary laid out as "TERM: explanation", one chunk per term. */
+	layout?: 'definitions';
 }
 
 /** A labeled page range that is deliberately not ingested. Listed in the summary so skips are visible. */

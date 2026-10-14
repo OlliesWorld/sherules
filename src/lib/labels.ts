@@ -8,12 +8,23 @@ const SPORT_NAMES: Record<string, string> = {
 
 const LEAGUE_NAMES: Record<string, string> = {
 	ncaa: 'NCAA',
+	pro: 'Pro',
 	wnba: 'WNBA'
 };
 
 const LEAGUE_LEVELS: Record<string, string> = {
 	ncaa: 'College',
+	pro: 'Professional',
 	wnba: 'Professional'
+};
+
+// Leagues answered from another organization's rulebook name it in the page banner,
+// with a note on what that means. Keyed by "sport/league".
+const BORROWED_RULEBOOKS: Record<string, { rulebook: string; note: string }> = {
+	'volleyball/pro': {
+		rulebook: 'USA Volleyball Indoor Rules 2025-2027',
+		note: 'LOVB and MLV may use their own variations of these rules.'
+	}
 };
 
 // "Try asking" suggestions. Keep them to questions the ingested rulebook can answer.
@@ -42,6 +53,17 @@ export function leagueName(slug: string): string {
 
 export function leagueLevel(slug: string): string | undefined {
 	return LEAGUE_LEVELS[slug];
+}
+
+/** For the banner: "the 2026-27 NCAA rulebook", or the borrowed rulebook's name. */
+export function rulebookLabel(sport: string, league: string, seasons: string): string {
+	const borrowed = BORROWED_RULEBOOKS[`${sport}/${league}`];
+	return borrowed ? `the ${borrowed.rulebook}` : `the ${seasons} ${leagueName(league)} rulebook`;
+}
+
+/** A caveat shown under the banner, if this league has one. */
+export function rulebookNote(sport: string, league: string): string | undefined {
+	return BORROWED_RULEBOOKS[`${sport}/${league}`]?.note;
 }
 
 export function exampleQuestions(sport: string): string[] {

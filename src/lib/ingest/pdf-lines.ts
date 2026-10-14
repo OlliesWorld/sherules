@@ -24,12 +24,17 @@ export interface OpenChunk {
 	isTable: boolean;
 }
 
-/** Turns the pages in a range into a flat list of lines, dropping page furniture. */
+/**
+ * Turns the pages in a range into a flat list of lines, dropping page furniture.
+ * `isPageFurniture` lets a parser drop extra lines its book repeats on every page
+ * (headers, side tabs) on top of the NCAA running headers handled here.
+ */
 export function collectLines(
 	pages: string[],
 	range: PageRange,
 	source: Source,
-	problems: PageProblem[]
+	problems: PageProblem[],
+	isPageFurniture?: (line: string) => boolean
 ): Line[] {
 	const lines: Line[] = [];
 
@@ -60,7 +65,7 @@ export function collectLines(
 		if (PAGE_NUMBER.test(pageLines[0])) pageLines.shift();
 
 		for (const raw of pageLines) {
-			if (RUNNING_HEADER.test(raw)) continue;
+			if (RUNNING_HEADER.test(raw) || isPageFurniture?.(raw)) continue;
 			lines.push({ raw, page });
 		}
 	}
@@ -119,4 +124,34 @@ export function clean(raw: string): string {
 
 export function isAllCaps(text: string): boolean {
 	return text === text.toUpperCase() && /[A-Z]/.test(text);
+}
+
+const SMALL_WORDS = new Set(['a', 'an', 'and', 'as', 'at', 'by', 'for', 'in', 'of', 'on', 'or', 'the', 'to']);
+
+/** "TO SCORE A POINT, TO WIN A SET" -> "To Score a Point, to Win a Set". For all-caps headings. */
+export function titleCase(text: string): string {
+	return text
+		.toLowerCase()
+		.split(' ')
+		.map((word, i) => (i > 0 && SMALL_WORDS.has(word) ? word : word.charAt(0).toUpperCase() + word.slice(1)))
+		.join(' ');
+}
+
+/**
+ * Some PDFs print words broken across lines with a hyphen ("rectan-" / "gular").
+ * Joins those back into one word when the next line continues in lowercase.
+ * Real hyphenated words split at their hyphen ("warm-" / "up") lose the hyphen,
+ * a small price for readable text.
+ */
+export function joinHyphenatedLines(lines: string[]): string[] {
+	const joined: string[] = [];
+	for (const line of lines) {
+		const previous = joined.at(-1);
+		if (previous && /[a-z]-$/.test(previous) && /^[a-z]/.test(line)) {
+			joined[joined.length - 1] = previous.slice(0, -1) + line;
+		} else {
+			joined.push(line);
+		}
+	}
+	return joined;
 }

@@ -7,6 +7,8 @@
 // Source ids are listed in src/lib/ingest/sources.ts.
 import { parseNcaaRulebook } from '#lib/ingest/chunk-ncaa-rulebook.ts';
 import { parseNcaaSections } from '#lib/ingest/chunk-ncaa-sections.ts';
+import { parseFivbRules } from '#lib/ingest/chunk-fivb-rules.ts';
+import { parseUsavCasebook } from '#lib/ingest/chunk-usav-casebook.ts';
 import { readPdfPages } from '#lib/ingest/pdf.ts';
 import { getSource, sources } from '#lib/ingest/sources.ts';
 import type { ParsedChunk, ParserName, ParseResult, Source } from '#lib/ingest/types.ts';
@@ -15,7 +17,9 @@ import { createEmbedder, documentInput, EMBEDDING_MODEL_TAG } from '#lib/server/
 
 const parsers: Record<ParserName, (pages: string[], source: Source) => ParseResult> = {
 	'ncaa-rulebook': parseNcaaRulebook,
-	'ncaa-sections': parseNcaaSections
+	'ncaa-sections': parseNcaaSections,
+	'fivb-rules': parseFivbRules,
+	'usav-casebook': parseUsavCasebook
 };
 
 async function main() {
@@ -86,9 +90,15 @@ function printSummary(source: Source, pageCount: number, chunks: ParsedChunk[], 
 
 	// Chunks per rule. A rule with suspiciously few chunks usually means a missed heading.
 	console.log('\nChunks per rule (rule / interpretation):');
-	const ruleNumber = (chunk: ParsedChunk) => chunk.ruleRef.match(/^Rule (\d+)/)?.[1] ?? '?';
-	const titles = new Map(chunks.map((chunk) => [ruleNumber(chunk), chunk.headingPath.split(' > ').find((p) => p.startsWith('Rule '))]));
-	const ruleNums = [...new Set(chunks.map(ruleNumber))].sort((a, b) => Number(a) - Number(b));
+	// The rule a chunk belongs to: the first number in its ref ("Rule 9.2.3", "Case 12.10").
+	// Chunks without one (e.g. "Definition: Fault") are grouped under their first heading.
+	const ruleNumber = (chunk: ParsedChunk) => chunk.ruleRef.match(/\d+/)?.[0] ?? chunk.headingPath.split(' > ')[0];
+	const ruleTitle = (chunk: ParsedChunk) =>
+		chunk.headingPath.split(' > ').find((p) => p.startsWith('Rule ')) ?? chunk.headingPath.split(' > ')[0];
+	const titles = new Map(chunks.map((chunk) => [ruleNumber(chunk), ruleTitle(chunk)]));
+	// Numbered rules in order, then named groups like "Definitions" at the end.
+	const order = (key: string) => (Number.isNaN(Number(key)) ? Infinity : Number(key));
+	const ruleNums = [...new Set(chunks.map(ruleNumber))].sort((a, b) => order(a) - order(b));
 	for (const num of ruleNums) {
 		const rules = chunks.filter((c) => ruleNumber(c) === num && c.type === 'rule').length;
 		const interps = chunks.filter((c) => ruleNumber(c) === num && c.type === 'interpretation').length;

@@ -71,6 +71,46 @@ export const sources: Source[] = [
 			36: 'Division I uniform rules graphic (text extracts with gaps)',
 			37: 'Uniform graphic (no text)'
 		}
+	},
+
+	// Pro volleyball (LOVB, MLV): neither league publishes a rulebook, so the Pro page uses
+	// USA Volleyball's Indoor Rules (FIVB rules with USA Volleyball's changes) and its casebook.
+	{
+		id: 'usav-indoor-rules-2025-27',
+		name: 'USA Volleyball Indoor Rules 2025-2027',
+		url: 'https://usavolleyball.org/wp-content/uploads/2023/03/2025-2027-USAV-Indoor-Rules-Book_FINAL.pdf',
+		file: 'data/usav/usav-indoor-rules-2025-27.pdf',
+		sport: 'volleyball',
+		league: 'pro',
+		season: '2025-27',
+		division: 'all',
+		parser: 'fivb-rules',
+		ranges: [
+			{ from: 20, to: 78, type: 'rule' }, // Rules 1-28 (the game and the officials)
+			{ from: 103, to: 104, type: 'rule', layout: 'definitions' }
+		],
+		skipped: [
+			{ from: 1, to: 3, reason: 'Copyright, foreword, acknowledgments' },
+			{ from: 4, to: 7, reason: 'Table of contents' },
+			{ from: 8, to: 19, reason: 'Section I: modifications, rules commission, changes summary, philosophy, ball handling and conduct guidelines' },
+			{ from: 79, to: 102, reason: 'Court diagrams and official hand signals' },
+			{ from: 105, to: 152, reason: 'U-Volley, co-ed and paravolley rules' }
+		]
+	},
+	{
+		id: 'usav-casebook-2025-27',
+		name: 'USA Volleyball Casebook of Approved Rulings (rev. Jan. 1, 2026)',
+		url: 'https://usavolleyball.org/wp-content/uploads/2026/02/25-27_Casebook_1-1-26.pdf',
+		file: 'data/usav/usav-casebook-2025-27.pdf',
+		sport: 'volleyball',
+		league: 'pro',
+		season: '2025-27',
+		division: 'all',
+		parser: 'usav-casebook',
+		ranges: [
+			{ from: 9, to: 160, type: 'interpretation' } // Cases for Rules 1-27
+		],
+		skipped: [{ from: 1, to: 8, reason: 'Title, contents, acknowledgments, foreword, notation, change log' }]
 	}
 ];
 

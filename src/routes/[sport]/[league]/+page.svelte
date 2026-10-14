@@ -5,7 +5,7 @@
 	import SportIcon from '#lib/components/SportIcon.svelte';
 	import { Button } from '#lib/components/ui/button/index.ts';
 	import { Input } from '#lib/components/ui/input/index.ts';
-	import { exampleQuestions, leagueName, sportName } from '#lib/labels.ts';
+	import { exampleQuestions, leagueName, rulebookLabel, rulebookNote, sportName } from '#lib/labels.ts';
 	import type { PageProps } from './$types';
 
 	// `form` holds whatever the `ask` action returned (or passed to fail()).
@@ -23,6 +23,7 @@
 	let seasons = $derived([...new Set(data.sources.map((source) => source.season))].join(', '));
 	let examples = $derived(exampleQuestions(data.sport));
 	let sourceName = $derived(data.sources[0]?.name ?? '');
+	let note = $derived(rulebookNote(data.sport, data.league));
 	// asksLeft is null when there's no daily limit (local development).
 	let outOfAsks = $derived(data.asksLeft === 0);
 
@@ -80,9 +81,11 @@
 		{sportName(data.sport)}
 	</h1>
 	<p class="mt-1 text-sm font-medium text-muted-foreground">
-		Answers from the {seasons}
-		{leagueName(data.league)} rulebook
+		Answers from {rulebookLabel(data.sport, data.league, seasons)}
 	</p>
+	{#if note}
+		<p class="mt-1 text-xs text-muted-foreground">{note}</p>
+	{/if}
 </div>
 
 <form
