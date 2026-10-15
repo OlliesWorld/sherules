@@ -1,7 +1,7 @@
 import { error, fail } from '@sveltejs/kit';
 import { dev } from '$app/env';
 import { listLeagueSources } from '#lib/server/catalog.ts';
-import { db, ragDeps } from '#lib/server/clients.ts';
+import { db, limiter, ragDeps } from '#lib/server/clients.ts';
 import { logQuestion } from '#lib/server/log.ts';
 import { askRulebook } from '#lib/server/rag.ts';
 import { ASKS_PER_DAY, asksLeft, refundAsk, takeAsk } from '#lib/server/rate-limit.ts';
@@ -9,7 +9,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 const MAX_QUESTION_LENGTH = 500;
 
-// The daily limit only applies on the deployed site, so local testing is unlimited.
+// The daily limits only apply on the deployed site, so local testing is unlimited.
 const LIMIT_ENABLED = !dev;
 
 export const load: PageServerLoad = async ({ params, getClientAddress }) => {
@@ -21,8 +21,8 @@ export const load: PageServerLoad = async ({ params, getClientAddress }) => {
 		league: params.league,
 		sources,
 		asksPerDay: ASKS_PER_DAY,
-		// null = no limit (local development)
-		asksLeft: LIMIT_ENABLED ? await asksLeft(db, getClientAddress()) : null
+		// null = no limit shown (local development, or limits not configured)
+		asksLeft: LIMIT_ENABLED && limiter ? await asksLeft(limiter, getClientAddress()) : null
 	};
 };
 
@@ -44,11 +44,23 @@ export const actions = {
 
 		const { sport, league } = params;
 
-		// getClientAddress() is the visitor's IP (on Vercel, from the request headers).
+		// getClientAddress() is the visitor's IP (on Vercel, set by Vercel and not spoofable).
 		const ip = getClientAddress();
-		if (LIMIT_ENABLED && !(await takeAsk(db, ip))) {
-			await logQuestion({ question, sport, league, result: 'rate_limited' });
-			return fail(429, { question, limitReached: true });
+		if (LIMIT_ENABLED) {
+			// Without the limits there's no cap on AI spend, so turn questions away instead.
+			if (!limiter) {
+				console.error('[sherules] Daily limits need Redis and RATE_LIMIT_SECRET; refusing questions');
+				return fail(503, { question, error: 'Questions are temporarily unavailable.' });
+			}
+			const allowed = await takeAsk(limiter, ip);
+			if (allowed === 'visitor_limit') {
+				await logQuestion({ question, sport, league, result: 'rate_limited' });
+				return fail(429, { question, limitReached: true });
+			}
+			if (allowed === 'global_limit') {
+				await logQuestion({ question, sport, league, result: 'at_capacity' });
+				return fail(429, { question, atCapacity: true });
+			}
 		}
 
 		const startedAt = Date.now();
@@ -66,12 +78,14 @@ export const actions = {
 				})),
 				ms: Date.now() - startedAt
 			});
-			return { question, result };
+			// The excerpts panel (all retrieved rule text, with distances) is a tuning aid.
+			// In production it's left out, so only the cited rules' text reaches the page.
+			return { question, result: dev ? result : { ...result, excerpts: [] } };
 		} catch (err) {
 			console.error('askRulebook failed', err);
 			await logQuestion({ question, sport, league, result: 'error', ms: Date.now() - startedAt });
 			// The visitor got no answer, so this one doesn't count.
-			if (LIMIT_ENABLED) await refundAsk(db, ip);
+			if (LIMIT_ENABLED && limiter) await refundAsk(limiter, ip);
 			return fail(502, { question, error: 'Something went wrong looking that up. Please try again.' });
 		}
 	}

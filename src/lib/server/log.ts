@@ -1,10 +1,4 @@
-import {
-	KV_REST_API_TOKEN,
-	KV_REST_API_URL,
-	UPSTASH_REDIS_REST_TOKEN,
-	UPSTASH_REDIS_REST_URL
-} from '$app/env/private';
-import { Redis } from '@upstash/redis';
+import { redis } from './redis.ts';
 
 // Question log in Upstash Redis, same approach as SheKnows: each question is pushed onto
 // a list as JSON, and the list is trimmed to the newest MAX_LOGS entries.
@@ -16,7 +10,8 @@ export interface QuestionLogEntry {
 	question: string;
 	sport: string;
 	league: string;
-	result: 'answered' | 'not_found' | 'rate_limited' | 'error';
+	/** rate_limited = this visitor's daily limit; at_capacity = the site-wide daily cap. */
+	result: 'answered' | 'not_found' | 'rate_limited' | 'at_capacity' | 'error';
 	/** Rule refs cited in the answer. */
 	citations?: string[];
 	/** Rule refs search returned, closest first, with distance. For checking retrieval. */
@@ -24,10 +19,6 @@ export interface QuestionLogEntry {
 	/** Time from receiving the question to having an answer. */
 	ms?: number;
 }
-
-const url = KV_REST_API_URL ?? UPSTASH_REDIS_REST_URL;
-const token = KV_REST_API_TOKEN ?? UPSTASH_REDIS_REST_TOKEN;
-const redis = url && token ? new Redis({ url, token }) : null;
 
 /**
  * Saves one question to the log. Never throws: a logging problem must not break answering.

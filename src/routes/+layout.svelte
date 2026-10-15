@@ -40,9 +40,9 @@
 	<title>SheRules: women's sports rules, in plain language</title>
 </svelte:head>
 
-<!-- Sets class="dark" on <html> from the saved choice or the system setting (default),
-     with a tiny script in <head> so the page never flashes the wrong theme. -->
-<ModeWatcher />
+<!-- Sets class="dark" on <html> from the saved choice or the system setting (default).
+     Its first-paint script lives in app.html (with a CSP nonce), so it isn't injected here. -->
+<ModeWatcher disableHeadScriptInjection />
 
 <div data-sport={sport} class="relative min-h-screen bg-background text-foreground">
 	<!-- The glow and drifting ball sit behind the header too, so the hero starts at the very top. -->

@@ -75,6 +75,15 @@
 	</div>
 {/snippet}
 
+{#snippet capacityCard()}
+	<div class="rounded-xl bg-muted p-6">
+		<p class="text-lg font-bold">We've answered all the questions we can for today.</p>
+		<p class="mt-2 text-muted-foreground">
+			SheRules has a daily limit across everyone. Please come back tomorrow.
+		</p>
+	</div>
+{/snippet}
+
 <div class="motion-stagger">
 	<h1 class="font-display text-3xl font-black tracking-tight sm:text-4xl">
 		{leagueName(data.league)}
@@ -116,11 +125,10 @@
 	</Button>
 </form>
 
-{#if data.asksLeft !== null}
-	<p class="mt-2 pl-4 text-xs text-muted-foreground">
-		{data.asksLeft} of {data.asksPerDay} free questions left today
-	</p>
-{/if}
+<p class="mt-2 pl-4 text-xs text-muted-foreground">
+	{#if data.asksLeft !== null}{data.asksLeft} of {data.asksPerDay} free questions left today ·{/if}
+	Questions are saved anonymously to improve answers.
+</p>
 
 <!-- aria-live announces new content to screen readers when the answer arrives. -->
 <section aria-live="polite" class="page-enter mt-8">
@@ -138,6 +146,8 @@
 		</div>
 	{:else if form?.limitReached}
 		{@render limitCard()}
+	{:else if form?.atCapacity}
+		{@render capacityCard()}
 	{:else if form?.error}
 		<div class="rounded-lg border border-destructive/40 p-6" role="alert">
 			<p class="font-bold">Something went wrong on our end.</p>
@@ -178,7 +188,16 @@
 				{/each}
 			</div>
 
-			<!-- For checking retrieval while we tune it. <details> is a native show/hide toggle. -->
+			<!-- The rule text above is quoted from copyrighted rulebooks, so say whose it is. -->
+			<p class="mt-4 text-xs leading-relaxed text-muted-foreground">
+				Rule text quoted from the {[...new Set(result.citations.map((c) => c.sourceName))].join(' and the ')}
+				for reference only. SheRules is not affiliated with or endorsed by its publisher. The official rulebook
+				is the final word, so use "Open source" to read the full rule.
+			</p>
+
+			<!-- For checking retrieval while we tune it. The server only sends excerpts in local
+			     development (see +page.server.ts). <details> is a native show/hide toggle. -->
+			{#if result.excerpts.length > 0}
 			<details class="mt-8 text-sm text-muted-foreground">
 				<summary class="cursor-pointer font-medium hover:text-foreground">
 					Show the {result.excerpts.length} excerpts this answer was based on
@@ -198,6 +217,7 @@
 					{/each}
 				</ul>
 			</details>
+			{/if}
 		</article>
 	{:else if outOfAsks}
 		{@render limitCard()}

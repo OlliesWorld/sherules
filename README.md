@@ -1,54 +1,54 @@
-# sv
+# SheRules
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Ask a rules question about a women's sport and get a plain-language answer taken only from the official rulebook, with the rule cited and a link to the exact page of the official PDF.
 
-## Creating a project
+Currently covers NCAA volleyball, pro volleyball (USA Volleyball rules), NCAA basketball and the WNBA.
 
-If you're seeing this, you've probably already done this step. Congrats!
+**Stack:** SvelteKit 3 on Vercel · Turso (libSQL with vector search) · Gemini embeddings and answers · Upstash Redis · Tailwind + shadcn-svelte
 
-```sh
-# create a new project
-npx sv create my-app
-```
+More detail: [`project_mgmt/`](project_mgmt/) — PRD, technical spec, design spec, build plan.
 
-To recreate this project with the same configuration:
+## Setup
 
-```sh
-# recreate this project
-npx sv@1.1.1 create --template minimal --types ts --add sveltekit-adapter="adapter:vercel" --install npm .
-```
-
-## Adding features
-
-Add features to your project with `sv add`:
+Needs Node 22 or 24.
 
 ```sh
-npx sv add
-```
-
-For example, to add Tailwind CSS:
-
-```sh
-npx sv add tailwindcss
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
+npm install
+cp .env.example .env   # then fill in the values; .env is gitignored
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+| Variable | Needed for |
+|---|---|
+| `GEMINI_API_KEY` | Everything (from https://aistudio.google.com/apikey) |
+| `TURSO_DATABASE_URL` | Everything (`file:local.db` locally, `libsql://…` for Turso Cloud) |
+| `TURSO_AUTH_TOKEN` | Turso Cloud |
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Question log and daily limits (required in production) |
+| `RATE_LIMIT_SECRET` | Daily limits (required in production; `openssl rand -hex 32`) |
 
-To create a production version of your app:
+The daily question limits are off in local development.
 
-```sh
-npm run build
-```
+## Adding a rulebook
 
-You can preview the production build with `npm run preview`.
+Rulebook PDFs are copyrighted, so they live in `data/`, which is gitignored and never committed.
+
+1. Download the official PDF into `data/<sport>/`
+2. Look at its text: `npx tsx scripts/dump-pdf.ts data/<sport>/<file>.pdf > dump.txt`
+3. Add an entry to `src/lib/ingest/sources.ts` (and a parser in `src/lib/ingest/` if the layout is new)
+4. Check the parse: `npm run ingest -- <source-id> --dry-run`
+5. Embed and store: `npm run ingest -- <source-id>`
+
+## Scripts
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Local dev server |
+| `npm run check` | Type check |
+| `npm run ingest -- <id> [--dry-run]` | Parse, embed and store a rulebook |
+| `npm run ask -- <sport> <league> "<question>"` | Ask from the terminal; shows retrieved rules and distances |
+| `npm run logs [-- 50]` | Recent questions from the Redis log |
+| `npm run db:check` | Check the Turso connection and vector support |
+
+## Deploying
+
+Push to `main`; Vercel builds and deploys. Set the environment variables above in Vercel (production can use a read-only Turso token). See `project_mgmt/SECURITY_PLAN.md` for the launch checklist.

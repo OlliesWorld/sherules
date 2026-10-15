@@ -4,6 +4,15 @@ import { getSource } from '../ingest/sources.ts';
 // What the site has data for. Pages read from the chunks table itself, so a sport or
 // league appears only once something has been ingested for it.
 
+/**
+ * Cache header for pages that are the same for every visitor (home, sport pages).
+ * Vercel's CDN serves them for 10 minutes without touching the database, then refreshes
+ * in the background. A newly ingested sport or league can take up to 10 minutes to appear.
+ */
+export const CATALOG_CACHE_HEADERS = {
+	'cache-control': 'public, max-age=0, s-maxage=600, stale-while-revalidate=3600'
+};
+
 export async function listSports(db: Client): Promise<string[]> {
 	const result = await db.execute('SELECT DISTINCT sport FROM chunks ORDER BY sport');
 	return result.rows.map((row) => String(row.sport));
