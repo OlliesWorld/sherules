@@ -21,3 +21,9 @@ export const ragDeps: RagDeps = {
 
 /** Daily limits, or null if Redis or the hashing secret isn't configured. */
 export const limiter: Limiter | null = redis && RATE_LIMIT_SECRET ? { counter: redis, secret: RATE_LIMIT_SECRET } : null;
+
+/** What's missing when `limiter` is null, for the server log. Names only, never values. */
+export const limiterMissing = [
+	!redis && 'Redis (KV_REST_API_URL + KV_REST_API_TOKEN, or UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN)',
+	!RATE_LIMIT_SECRET && 'RATE_LIMIT_SECRET'
+].filter(Boolean);

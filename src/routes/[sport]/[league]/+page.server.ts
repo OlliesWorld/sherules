@@ -1,7 +1,7 @@
 import { error, fail } from '@sveltejs/kit';
 import { dev } from '$app/env';
 import { listLeagueSources } from '#lib/server/catalog.ts';
-import { db, limiter, ragDeps } from '#lib/server/clients.ts';
+import { db, limiter, limiterMissing, ragDeps } from '#lib/server/clients.ts';
 import { logQuestion } from '#lib/server/log.ts';
 import { askRulebook } from '#lib/server/rag.ts';
 import { ASKS_PER_DAY, asksLeft, refundAsk, takeAsk } from '#lib/server/rate-limit.ts';
@@ -49,7 +49,7 @@ export const actions = {
 		if (LIMIT_ENABLED) {
 			// Without the limits there's no cap on AI spend, so turn questions away instead.
 			if (!limiter) {
-				console.error('[sherules] Daily limits need Redis and RATE_LIMIT_SECRET; refusing questions');
+				console.error(`[sherules] Refusing questions: daily limits can't run. Missing: ${limiterMissing.join('; ')}`);
 				return fail(503, { question, error: 'Questions are temporarily unavailable.' });
 			}
 			const allowed = await takeAsk(limiter, ip);
