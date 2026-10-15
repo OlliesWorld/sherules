@@ -6,3 +6,8 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      # SvelteKit 3.0 supports TypeScript 6 only (peer dependency ^6.0.0), so a
+      # TypeScript 7 bump fails to install. Remove this once SvelteKit supports 7.
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
