@@ -9,6 +9,7 @@ import { parseNcaaRulebook } from '#lib/ingest/chunk-ncaa-rulebook.ts';
 import { parseNcaaSections } from '#lib/ingest/chunk-ncaa-sections.ts';
 import { parseFivbRules } from '#lib/ingest/chunk-fivb-rules.ts';
 import { parseUsavCasebook } from '#lib/ingest/chunk-usav-casebook.ts';
+import { parseNbaRules } from '#lib/ingest/chunk-nba-rules.ts';
 import { readPdfPages } from '#lib/ingest/pdf.ts';
 import { getSource, sources } from '#lib/ingest/sources.ts';
 import type { ParsedChunk, ParserName, ParseResult, Source } from '#lib/ingest/types.ts';
@@ -19,7 +20,8 @@ const parsers: Record<ParserName, (pages: string[], source: Source) => ParseResu
 	'ncaa-rulebook': parseNcaaRulebook,
 	'ncaa-sections': parseNcaaSections,
 	'fivb-rules': parseFivbRules,
-	'usav-casebook': parseUsavCasebook
+	'usav-casebook': parseUsavCasebook,
+	'nba-rules': parseNbaRules
 };
 
 async function main() {

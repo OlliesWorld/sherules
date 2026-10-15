@@ -8,7 +8,8 @@ export type ParserName =
 	| 'ncaa-rulebook' // numbered headings: 1.2 SECTION / 1.2.3 Article (volleyball)
 	| 'ncaa-sections' // labeled headings: SECTION 2. / Art. 3. (basketball)
 	| 'fivb-rules' // FIVB layout: RULE 1. / 1.2 Sub-rule / 1.2.1: points (USA Volleyball)
-	| 'usav-casebook'; // numbered cases with Ruling and Reference (USA Volleyball casebook)
+	| 'usav-casebook' // numbered cases with Ruling and Reference (USA Volleyball casebook)
+	| 'nba-rules'; // NBA layout: RULE NO. 1— / Section I— / a. items (WNBA)
 
 /** A run of pages (1-based, inclusive) that a parser should read, and what kind of content it holds. */
 export interface PageRange {

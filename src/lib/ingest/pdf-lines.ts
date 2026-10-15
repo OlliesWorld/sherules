@@ -128,13 +128,20 @@ export function isAllCaps(text: string): boolean {
 
 const SMALL_WORDS = new Set(['a', 'an', 'and', 'as', 'at', 'by', 'for', 'in', 'of', 'on', 'or', 'the', 'to']);
 
-/** "TO SCORE A POINT, TO WIN A SET" -> "To Score a Point, to Win a Set". For all-caps headings. */
+/**
+ * "TO SCORE A POINT, TO WIN A SET" -> "To Score a Point, to Win a Set". For all-caps headings.
+ * Words joined by a dash, slash or hyphen are each capitalized: "Live/Dead Ball", "Out-of-Bounds".
+ */
 export function titleCase(text: string): string {
 	return text
 		.toLowerCase()
 		.split(' ')
-		.map((word, i) => (i > 0 && SMALL_WORDS.has(word) ? word : word.charAt(0).toUpperCase() + word.slice(1)))
+		.map((word, i) => (i > 0 && SMALL_WORDS.has(word) ? word : capitalizeParts(word)))
 		.join(' ');
+}
+
+function capitalizeParts(word: string): string {
+	return word.replace(/(^|[—/-])([a-z])/g, (_, joiner: string, letter: string) => joiner + letter.toUpperCase());
 }
 
 /**

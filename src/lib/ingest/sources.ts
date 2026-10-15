@@ -111,6 +111,28 @@ export const sources: Source[] = [
 			{ from: 9, to: 160, type: 'interpretation' } // Cases for Rules 1-27
 		],
 		skipped: [{ from: 1, to: 8, reason: 'Title, contents, acknowledgments, foreword, notation, change log' }]
+	},
+	{
+		id: 'wnba-rules-2026',
+		name: 'Official Rules of the WNBA 2026',
+		url: 'https://cdn.wnba.com/sites/4/2026/05/2026-WNBA-Official-Rule-Book.pdf',
+		file: 'data/wnba/wnba-rules-2026.pdf',
+		sport: 'basketball',
+		league: 'wnba',
+		season: '2026',
+		division: 'all',
+		parser: 'nba-rules',
+		ranges: [
+			// Rules 1-14 end partway down page 81, where Comments on the Rules begins.
+			// The parser splits page 81 at the "COMMENTS ON THE RULES" heading.
+			{ from: 12, to: 81, type: 'rule' },
+			{ from: 81, to: 90, type: 'interpretation' }
+		],
+		skipped: [
+			{ from: 1, to: 9, reason: 'Cover, title, rules index' },
+			{ from: 10, to: 11, reason: 'Court diagram' },
+			{ from: 91, to: 91, reason: 'Back cover' }
+		]
 	}
 ];
 
