@@ -36,7 +36,9 @@
 
 	let room: Room | null = null;
 	let ticker: ReturnType<typeof setInterval> | undefined;
-	// Seconds in a row with nobody talking and the agent not thinking or answering.
+	// Seconds in a row with no words spoken (by the visitor or the agent) and the agent not
+	// thinking or answering. Reset by transcripts rather than raw sound, so background noise
+	// on a phone doesn't keep a silent call alive.
 	let silentSeconds = 0;
 	let wrapUpSeconds = 0;
 	// Voice calls left today after this one, from the server (undefined in local development).
@@ -89,6 +91,14 @@
 			newRoom.on(RoomEvent.ParticipantAttributesChanged, (changed, participant) => {
 				if (participant.isAgent && changed['lk.agent.state']) agentState = changed['lk.agent.state'];
 			});
+			// Words recognized from either side arrive as live transcripts, piece by piece while
+			// someone talks. Each piece counts as activity for the silence hang-up.
+			newRoom.registerTextStreamHandler('lk.transcription', async (reader) => {
+				for await (const _piece of reader) silentSeconds = 0;
+			});
+			newRoom.on(RoomEvent.TranscriptionReceived, () => {
+				silentSeconds = 0; // older agents send transcripts this way instead
+			});
 			newRoom.on(RoomEvent.AudioPlaybackStatusChanged, () => {
 				audioBlocked = !newRoom.canPlaybackAudio;
 			});
@@ -125,8 +135,7 @@
 		}
 
 		secondsLeft = Math.max(0, secondsLeft - 1);
-		const someoneTalking = currentRoom.activeSpeakers.length > 0;
-		silentSeconds = someoneTalking || agentBusy ? 0 : silentSeconds + 1;
+		silentSeconds = agentBusy ? 0 : silentSeconds + 1;
 
 		if (secondsLeft === 0) {
 			beginWrapUp(currentRoom);
