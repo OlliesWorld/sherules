@@ -3,6 +3,7 @@
 	import { enhance, type SubmitFunction } from '$app/forms';
 	import RuleCard from '#lib/components/RuleCard.svelte';
 	import SportIcon from '#lib/components/SportIcon.svelte';
+	import VoiceAgent from '#lib/components/VoiceAgent.svelte';
 	import { Button } from '#lib/components/ui/button/index.ts';
 	import { Input } from '#lib/components/ui/input/index.ts';
 	import { exampleQuestions, leagueName, rulebookLabel, rulebookNote, sportName } from '#lib/labels.ts';
@@ -129,6 +130,10 @@
 	{#if data.asksLeft !== null}{data.asksLeft} of {data.asksPerDay} free questions left today ·{/if}
 	Questions are saved anonymously to improve answers.
 </p>
+
+{#if data.voiceEnabled}
+	<VoiceAgent sport={data.sport} league={data.league} />
+{/if}
 
 <!-- aria-live announces new content to screen readers when the answer arrives. -->
 <section aria-live="polite" class="page-enter mt-8">

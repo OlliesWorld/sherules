@@ -14,7 +14,7 @@
 		"db:check": "tsx --env-file-if-exists=.env scripts/db-check.ts",
 		"ask": "tsx --env-file-if-exists=.env scripts/ask.ts",
 		"logs": "tsx --env-file-if-exists=.env scripts/logs.ts",
-		"test": "tsx --test src/lib/server/agent-search.test.ts"
+		"test": "tsx --test src/lib/server/agent-search.test.ts src/lib/server/voice.test.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-vercel": "^7.0.0",
@@ -38,6 +38,8 @@
 		"@lucide/svelte": "^1.55.0",
 		"@upstash/redis": "^1.39.0",
 		"clsx": "^2.1.1",
+		"livekit-client": "^2.22.4",
+		"livekit-server-sdk": "^2.19.1",
 		"mode-watcher": "^1.1.0",
 		"redis": "^6.3.0",
 		"tailwind-merge": "^3.7.0",

@@ -1,10 +1,11 @@
 import { error, fail } from '@sveltejs/kit';
 import { dev } from '$app/env';
 import { listLeagueSources } from '#lib/server/catalog.ts';
-import { db, limiter, limiterMissing, ragDeps } from '#lib/server/clients.ts';
+import { db, limiter, limiterMissing, ragDeps, voiceConfig } from '#lib/server/clients.ts';
 import { logQuestion } from '#lib/server/log.ts';
 import { askRulebook } from '#lib/server/rag.ts';
 import { ASKS_PER_DAY, asksLeft, refundAsk, takeAsk } from '#lib/server/rate-limit.ts';
+import { voiceAvailableFor } from '#lib/voice.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 const MAX_QUESTION_LENGTH = 500;
@@ -26,7 +27,15 @@ export const load: PageServerLoad = async ({ params, getClientAddress }) => {
 		}
 	}
 
-	return { sport: params.sport, league: params.league, sources, asksPerDay: ASKS_PER_DAY, asksLeft: left };
+	return {
+		sport: params.sport,
+		league: params.league,
+		sources,
+		asksPerDay: ASKS_PER_DAY,
+		asksLeft: left,
+		// The mic button shows only where the voice agent has a rulebook, and only if LiveKit is set up.
+		voiceEnabled: voiceConfig !== null && voiceAvailableFor(params.sport, params.league)
+	};
 };
 
 // Form actions handle <form method="POST"> submissions on the server, similar to

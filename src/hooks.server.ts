@@ -14,8 +14,8 @@ const SECURITY_HEADERS: Record<string, string> = {
 	'X-Frame-Options': 'DENY',
 	// Send only the origin, not full URLs, to other sites (e.g. the PDF links).
 	'Referrer-Policy': 'strict-origin-when-cross-origin',
-	// The site uses none of these, so turn them off.
-	'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=()'
+	// Microphone only for this site's own pages (Ask by voice); everything else off.
+	'Permissions-Policy': 'camera=(), microphone=(self), geolocation=(), payment=()'
 };
 
 export const handle: Handle = async ({ event, resolve }) => {

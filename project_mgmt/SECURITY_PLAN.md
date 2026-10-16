@@ -30,9 +30,9 @@
 | Rulebook files | PDFs and local databases never committed; `data/` gitignored | `.gitignore` |
 | XSS | No `{@html}`; Svelte escapes model output and rule text; strict CSP: scripts only from this site with a per-request nonce | `vite.config.ts` (`csp`) |
 | Clickjacking | `frame-ancestors 'none'` + `X-Frame-Options: DENY` | `vite.config.ts`, `src/hooks.server.ts` |
-| Other headers | `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (camera, mic, location, payment off) | `src/hooks.server.ts` |
+| Other headers | `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (camera, location, payment off; microphone for this site only, for voice) | `src/hooks.server.ts` |
 | CSRF | SvelteKit 3 always checks the origin on form posts | framework |
-| AI spend | 5 questions per visitor per day and 500 per day site-wide; if the limits can't run in production, questions are refused rather than left unlimited | `src/lib/server/rate-limit.ts`, league `+page.server.ts` |
+| AI spend | Typed questions: 5 per visitor per day, 500 site-wide. Voice: 3 conversations per visitor per day, 100 site-wide, 5 minutes each (ended by the browser). If the limits can't run in production, questions and voice are refused rather than left unlimited | `src/lib/server/rate-limit.ts`, league `+page.server.ts`, `api/voice/token` |
 | Client IP | Vercel overwrites `X-Forwarded-For` and doesn't forward client-supplied values | Vercel |
 | Visitor ids | HMAC-SHA-256 of date + IP with a secret (`RATE_LIMIT_SECRET`): can't be reversed by trying every IP; not linkable across days | `rate-limit.ts` |
 | Retention | Limit counters in Redis expire after 2 days; question log capped at 1,000 entries, no IP or visitor details | `rate-limit.ts`, `log.ts` |
@@ -46,6 +46,8 @@
 | Input size | Questions limited to 500 characters (client and server) | league page and action |
 | Dependencies | `npm audit --omit=dev`: 0 vulnerabilities; Dependabot weekly updates | `.github/dependabot.yml` |
 | Dev-only page | `/dev/colors` returns 404 in production | `routes/dev/colors` |
+| Voice agent search | `/api/rules/search` requires `x-sherules-key` (constant-time check); retrieval only; no caching | `agent-search.ts` |
+| Voice tokens | LiveKit secret stays on the server; each token is for one new random room, valid 10 minutes, with the agent dispatched by name; CSP allows connections only to `*.livekit.cloud` | `voice.ts`, `vite.config.ts` |
 
 ---
 
@@ -91,6 +93,10 @@
 
 **Turso:**
 - [ ] Drop the old limits table (no longer used): `DROP TABLE IF EXISTS ask_usage;` in the SQL editor, using the full-access token
+
+**LiveKit Cloud:**
+- [ ] Usage limit or billing alert (voice is billed by the minute)
+- [ ] `SHERULES_AGENT_KEY` stored as an Agent Builder secret, used in the HTTP tool header
 
 **Google Cloud (Gemini project):**
 - [ ] Billing → Budgets & alerts: monthly budget (e.g. $20) with alerts at 50% and 90%

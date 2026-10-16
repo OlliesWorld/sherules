@@ -34,7 +34,12 @@ export const variables = defineEnvVars({
 
 	// Shared key for the voice agent's search endpoint (GET /api/rules/search, header
 	// x-sherules-key). Without it, the endpoint rejects every request.
-	SHERULES_AGENT_KEY: { schema: optional, description: 'Key the voice agent sends as x-sherules-key' }
+	SHERULES_AGENT_KEY: { schema: optional, description: 'Key the voice agent sends as x-sherules-key' },
+	LIVEKIT_URL: { schema: optional, description: 'LiveKit URL for the voice agent' },
+	LIVEKIT_API_KEY: { schema: optional, description: 'LiveKit API key for the voice agent' },
+	LIVEKIT_API_SECRET: { schema: optional, description: 'LiveKit API secret for the voice agent' },
+	// The agent's name in Agent Builder, used to send it into each voice conversation.
+	LIVEKIT_AGENT_NAME: { schema: optional, description: 'Agent name from Agent Builder (for dispatch)' }
 });
 
 function optional(value: string | undefined): string | undefined {

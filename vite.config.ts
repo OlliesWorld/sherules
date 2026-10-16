@@ -26,7 +26,10 @@ export default defineConfig({
 					'style-src': ['self', 'unsafe-inline', 'https://fonts.googleapis.com'],
 					'font-src': ['self', 'https://fonts.gstatic.com'],
 					'img-src': ['self', 'data:'],
-					'connect-src': ['self'],
+					// LiveKit Cloud, for voice conversations (signaling over wss, region lookup over https).
+					'connect-src': ['self', 'wss://*.livekit.cloud', 'https://*.livekit.cloud'],
+					// The agent's voice plays through <audio> elements fed by the WebRTC connection.
+					'media-src': ['self', 'blob:'],
 					'form-action': ['self'],
 					'base-uri': ['self'],
 					'object-src': ['none'],
