@@ -18,10 +18,11 @@ export const variables = defineEnvVars({
 		description: 'Turso database token. Leave unset for a local file database.'
 	},
 
-	// Upstash Redis for the question log and the daily limits (src/lib/server/redis.ts).
-	// Optional locally. In production the limits need Redis: without it, questions are
-	// turned away rather than left unlimited. Vercel's Redis integration sets the KV_*
-	// names; a database created directly in Upstash uses the UPSTASH_* names.
+	// Redis for the question log and the daily limits (src/lib/server/redis.ts). Set either
+	// REDIS_URL (a standard Redis database, e.g. Vercel's Redis integration) or the Upstash
+	// REST pair. Optional locally. In production the limits need Redis: without it,
+	// questions are turned away rather than left unlimited.
+	REDIS_URL: { schema: optional, description: 'Redis connection URL (redis:// or rediss://)' },
 	KV_REST_API_URL: { schema: optional, description: 'Redis REST URL (Vercel integration)' },
 	KV_REST_API_TOKEN: { schema: optional, description: 'Redis REST token (Vercel integration)' },
 	UPSTASH_REDIS_REST_URL: { schema: optional, description: 'Redis REST URL (Upstash directly)' },

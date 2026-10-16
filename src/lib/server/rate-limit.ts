@@ -1,5 +1,5 @@
 import { createHmac } from 'node:crypto';
-import type { Redis } from '@upstash/redis';
+import type { RedisStore } from './redis.ts';
 
 // Each question costs two Gemini calls (one embedding, one answer): about $0.0015
 // typically, $0.004 at worst. Two limits keep the bill predictable on a public site:
@@ -20,7 +20,7 @@ export type AskResult = 'ok' | 'visitor_limit' | 'global_limit';
  * Only the four Redis commands used are required, which also makes this easy to test.
  */
 export interface Limiter {
-	counter: Pick<Redis, 'get' | 'incr' | 'decr' | 'expire'>;
+	counter: Pick<RedisStore, 'get' | 'incr' | 'decr' | 'expire'>;
 	secret: string;
 }
 

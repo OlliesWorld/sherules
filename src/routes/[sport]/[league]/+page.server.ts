@@ -16,14 +16,17 @@ export const load: PageServerLoad = async ({ params, getClientAddress }) => {
 	const sources = await listLeagueSources(db, params.sport, params.league);
 	if (sources.length === 0) error(404, 'No rulebooks for this league yet');
 
-	return {
-		sport: params.sport,
-		league: params.league,
-		sources,
-		asksPerDay: ASKS_PER_DAY,
-		// null = no limit shown (local development, or limits not configured)
-		asksLeft: LIMIT_ENABLED && limiter ? await asksLeft(limiter, getClientAddress()) : null
-	};
+	// null = no count shown (local development, limits not configured, or Redis unreachable)
+	let left: number | null = null;
+	if (LIMIT_ENABLED && limiter) {
+		try {
+			left = await asksLeft(limiter, getClientAddress());
+		} catch (err) {
+			console.error('[sherules] Could not read the daily limit from Redis:', err);
+		}
+	}
+
+	return { sport: params.sport, league: params.league, sources, asksPerDay: ASKS_PER_DAY, asksLeft: left };
 };
 
 // Form actions handle <form method="POST"> submissions on the server, similar to
@@ -52,7 +55,14 @@ export const actions = {
 				console.error(`[sherules] Refusing questions: daily limits can't run. Missing: ${limiterMissing.join('; ')}`);
 				return fail(503, { question, error: 'Questions are temporarily unavailable.' });
 			}
-			const allowed = await takeAsk(limiter, ip);
+			let allowed;
+			try {
+				allowed = await takeAsk(limiter, ip);
+			} catch (err) {
+				// Redis unreachable: refuse rather than answer without a spending limit.
+				console.error('[sherules] Refusing question: could not reach Redis for the daily limit:', err);
+				return fail(503, { question, error: 'Questions are temporarily unavailable.' });
+			}
 			if (allowed === 'visitor_limit') {
 				await logQuestion({ question, sport, league, result: 'rate_limited' });
 				return fail(429, { question, limitReached: true });
@@ -85,7 +95,7 @@ export const actions = {
 			console.error('askRulebook failed', err);
 			await logQuestion({ question, sport, league, result: 'error', ms: Date.now() - startedAt });
 			// The visitor got no answer, so this one doesn't count.
-			if (LIMIT_ENABLED && limiter) await refundAsk(limiter, ip);
+			if (LIMIT_ENABLED && limiter) await refundAsk(limiter, ip).catch(() => {});
 			return fail(502, { question, error: 'Something went wrong looking that up. Please try again.' });
 		}
 	}

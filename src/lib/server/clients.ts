@@ -24,6 +24,6 @@ export const limiter: Limiter | null = redis && RATE_LIMIT_SECRET ? { counter: r
 
 /** What's missing when `limiter` is null, for the server log. Names only, never values. */
 export const limiterMissing = [
-	!redis && 'Redis (KV_REST_API_URL + KV_REST_API_TOKEN, or UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN)',
+	!redis && 'Redis (REDIS_URL, or KV_REST_API_URL + KV_REST_API_TOKEN)',
 	!RATE_LIMIT_SECRET && 'RATE_LIMIT_SECRET'
 ].filter(Boolean);
