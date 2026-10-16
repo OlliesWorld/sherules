@@ -32,7 +32,7 @@
 | Clickjacking | `frame-ancestors 'none'` + `X-Frame-Options: DENY` | `vite.config.ts`, `src/hooks.server.ts` |
 | Other headers | `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (camera, location, payment off; microphone for this site only, for voice) | `src/hooks.server.ts` |
 | CSRF | SvelteKit 3 always checks the origin on form posts | framework |
-| AI spend | Typed questions: 5 per visitor per day, 500 site-wide. Voice: 3 conversations per visitor per day, 100 site-wide, 5 minutes each (ended by the browser). If the limits can't run in production, questions and voice are refused rather than left unlimited | `src/lib/server/rate-limit.ts`, league `+page.server.ts`, `api/voice/token` |
+| AI spend | Typed questions: 5 per visitor per day, 500 site-wide. Voice: 3 conversations per visitor per day, 100 site-wide, 3 minutes each and hung up after 30 seconds of silence (ended by the browser; set a session limit in LiveKit as a backstop). If the limits can't run in production, questions and voice are refused rather than left unlimited | `src/lib/server/rate-limit.ts`, league `+page.server.ts`, `api/voice/token` |
 | Client IP | Vercel overwrites `X-Forwarded-For` and doesn't forward client-supplied values | Vercel |
 | Visitor ids | HMAC-SHA-256 of date + IP with a secret (`RATE_LIMIT_SECRET`): can't be reversed by trying every IP; not linkable across days | `rate-limit.ts` |
 | Retention | Limit counters in Redis expire after 2 days; question log capped at 1,000 entries, no IP or visitor details | `rate-limit.ts`, `log.ts` |

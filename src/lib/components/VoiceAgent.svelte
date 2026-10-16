@@ -4,12 +4,14 @@
 	import PhoneOffIcon from '@lucide/svelte/icons/phone-off';
 	import Volume2Icon from '@lucide/svelte/icons/volume-2';
 	import { Button } from '#lib/components/ui/button/index.ts';
+	import { VOICE_IDLE_SECONDS } from '#lib/voice.ts';
 	import type { Room } from 'livekit-client';
 
 	// "Ask by voice": talk to the SheRules voice agent (LiveKit) from the league page.
 	// 1. Ask our server for a token (POST /api/voice/token), which also applies the daily limits
 	// 2. Join the private LiveKit room with the microphone on; the agent joins and answers
-	// 3. Hang up after the time limit, when the visitor taps End, or when leaving the page
+	// 3. Hang up after the time limit, after VOICE_IDLE_SECONDS with nobody talking,
+	//    when the visitor taps End, or when leaving the page
 	let { sport, league }: { sport: string; league: string } = $props();
 
 	type Status = 'idle' | 'connecting' | 'live';
@@ -23,6 +25,8 @@
 
 	let room: Room | null = null;
 	let countdown: ReturnType<typeof setInterval> | undefined;
+	// Seconds in a row with nobody talking and the agent not thinking or answering.
+	let silentSeconds = 0;
 	const audioElements: HTMLMediaElement[] = [];
 
 	const STATE_LABELS: Record<string, string> = {
@@ -50,7 +54,9 @@
 			}
 
 			// Loaded only now, so visitors who never use voice don't download it.
-			const { Room, RoomEvent, Track } = await import('livekit-client');
+			const { Room, RoomEvent, Track, setLogLevel } = await import('livekit-client');
+			// LiveKit logs every connection step to the browser console; keep visitors' consoles quiet.
+			setLogLevel('silent');
 			const newRoom = new Room();
 			room = newRoom;
 
@@ -76,12 +82,21 @@
 			agentState = 'initializing';
 			status = 'live';
 			secondsLeft = session.maxSeconds;
+			silentSeconds = 0;
+			// Once a second: count down, and hang up if the call has gone quiet.
 			countdown = setInterval(() => {
 				secondsLeft -= 1;
-				if (secondsLeft <= 0) stop();
+				const someoneTalking = newRoom.activeSpeakers.length > 0;
+				const agentBusy = agentState === 'thinking' || agentState === 'speaking';
+				silentSeconds = someoneTalking || agentBusy ? 0 : silentSeconds + 1;
+
+				if (secondsLeft <= 0) {
+					endWithNotice('Call ended at the time limit.');
+				} else if (silentSeconds >= VOICE_IDLE_SECONDS) {
+					endWithNotice(`Call ended after ${VOICE_IDLE_SECONDS} seconds of silence.`);
+				}
 			}, 1000);
 		} catch (err) {
-			console.error('Voice failed to start:', err);
 			await stop();
 			errorMessage =
 				err instanceof Error && err.name === 'NotAllowedError'
@@ -95,6 +110,12 @@
 		room = null;
 		cleanUp();
 		await current?.disconnect();
+	}
+
+	/** Hangs up and says why, under the button. */
+	async function endWithNotice(notice: string) {
+		await stop();
+		errorMessage = notice;
 	}
 
 	/** Removes the agent's audio and resets the button. Safe to call more than once. */
