@@ -30,7 +30,11 @@ export const variables = defineEnvVars({
 
 	// Secret for hashing visitor IPs in the daily limits. Needed in production (same rule as Redis).
 	// Generate one with: openssl rand -hex 32
-	RATE_LIMIT_SECRET: { schema: optional, description: 'Secret for hashing visitor IPs (openssl rand -hex 32)' }
+	RATE_LIMIT_SECRET: { schema: optional, description: 'Secret for hashing visitor IPs (openssl rand -hex 32)' },
+
+	// Shared key for the voice agent's search endpoint (GET /api/rules/search, header
+	// x-sherules-key). Without it, the endpoint rejects every request.
+	SHERULES_AGENT_KEY: { schema: optional, description: 'Key the voice agent sends as x-sherules-key' }
 });
 
 function optional(value: string | undefined): string | undefined {

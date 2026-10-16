@@ -13,7 +13,8 @@
 		"ingest": "tsx --env-file-if-exists=.env scripts/ingest.ts",
 		"db:check": "tsx --env-file-if-exists=.env scripts/db-check.ts",
 		"ask": "tsx --env-file-if-exists=.env scripts/ask.ts",
-		"logs": "tsx --env-file-if-exists=.env scripts/logs.ts"
+		"logs": "tsx --env-file-if-exists=.env scripts/logs.ts",
+		"test": "tsx --test src/lib/server/agent-search.test.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-vercel": "^7.0.0",
