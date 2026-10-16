@@ -38,6 +38,11 @@
 	--sport-l: 50%;
 	--sport-foreground: oklch(100% 0 0);
 
+	/* Voice call ring in its last 30 seconds: a warm amber, deep enough to see on white. */
+	--voice-warning: oklch(64% 0.16 65);
+	/* Same amber, deep enough for small text on white (5.2:1). */
+	--voice-warning-text: oklch(54% 0.13 62);
+
 	/* Rule cards: a light wash of the sport color over white (more on hover). */
 	--rule-card-base: var(--card);
 	--rule-card-mix: 7%;
@@ -59,6 +64,9 @@
 	/* Lighter accent so it glows on navy. */
 	--sport-l: 72%;
 	--sport-foreground: var(--background);
+
+	--voice-warning: oklch(80% 0.15 75);
+	--voice-warning-text: var(--voice-warning);
 
 	/* Rule cards stay the plain muted panel from the original design. */
 	--rule-card-base: var(--muted);
@@ -120,6 +128,8 @@
 	--color-sport: var(--sport);
 	--color-sport-soft: var(--sport-soft);
 	--color-sport-foreground: var(--sport-foreground);
+	--color-voice-warning: var(--voice-warning);
+	--color-voice-warning-text: var(--voice-warning-text);
 }
 
 @layer base {

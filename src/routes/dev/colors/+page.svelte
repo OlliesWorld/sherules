@@ -1,6 +1,7 @@
 <script lang="ts">
 	import RuleCard from '#lib/components/RuleCard.svelte';
 	import SportIcon from '#lib/components/SportIcon.svelte';
+	import VoiceRing from '#lib/components/VoiceRing.svelte';
 	import { Button } from '#lib/components/ui/button/index.ts';
 	import { Input } from '#lib/components/ui/input/index.ts';
 	import { sportName } from '#lib/labels.ts';
@@ -74,6 +75,17 @@
 			<div class="space-y-3">
 				<div class="calm-line h-0.5 w-full bg-sport"></div>
 				<div class="calm-line h-0.5 w-[60%] bg-sport"></div>
+			</div>
+
+			<!-- Voice call ring: full, half, last 30 seconds (amber + pulse), and wrapping up. -->
+			<div class="flex flex-wrap items-center gap-4 rounded-2xl border bg-card px-3 py-2.5">
+				<VoiceRing remaining={1} label="3:00 left" />
+				<VoiceRing remaining={0.5} label="1:30 left" />
+				<span class="flex items-center gap-2">
+					<VoiceRing remaining={0.12} warning label="0:22 left" />
+					<span class="text-sm font-semibold text-voice-warning-text tabular-nums">0:22</span>
+				</span>
+				<VoiceRing remaining={0} warning micOff label="Time's up" />
 			</div>
 		</section>
 	{/each}

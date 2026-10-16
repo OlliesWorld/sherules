@@ -22,6 +22,8 @@ export interface VoiceSession {
 	serverUrl: string;
 	token: string;
 	maxSeconds: number;
+	/** Voice calls this visitor has left today after this one (omitted when there are no limits). */
+	sessionsLeft?: number;
 }
 
 export type VoiceTokenBody = VoiceSession | { error: string; reason?: 'visitor_limit' | 'global_limit' };
@@ -33,6 +35,8 @@ export interface VoiceTokenInput {
 	league: unknown;
 	/** Uses up one of today's voice sessions; null when limits don't apply (local development). */
 	takeSession: (() => Promise<AskResult>) | null;
+	/** How many voice sessions the visitor has left today, for the closing message. */
+	sessionsLeft?: (() => Promise<number>) | null;
 }
 
 /** Validates the request, applies the daily voice limits, and returns a session. Never throws. */
@@ -60,7 +64,9 @@ export async function handleVoiceToken(input: VoiceTokenInput): Promise<{ status
 
 	try {
 		const token = await createToken(input.config, input.sport, input.league);
-		return { status: 200, body: { serverUrl: input.config.url, token, maxSeconds: VOICE_MAX_SECONDS } };
+		// Nice to have for the closing message, so a failure here doesn't stop the call.
+		const sessionsLeft = input.sessionsLeft ? await input.sessionsLeft().catch(() => undefined) : undefined;
+		return { status: 200, body: { serverUrl: input.config.url, token, maxSeconds: VOICE_MAX_SECONDS, sessionsLeft } };
 	} catch (err) {
 		console.error('[sherules] Could not create a voice token:', err);
 		return { status: 500, body: { error: 'Could not start voice' } };

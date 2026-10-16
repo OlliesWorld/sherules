@@ -3,6 +3,7 @@
 	import MicIcon from '@lucide/svelte/icons/mic';
 	import PhoneOffIcon from '@lucide/svelte/icons/phone-off';
 	import Volume2Icon from '@lucide/svelte/icons/volume-2';
+	import VoiceRing from '#lib/components/VoiceRing.svelte';
 	import { Button } from '#lib/components/ui/button/index.ts';
 	import { VOICE_IDLE_SECONDS } from '#lib/voice.ts';
 	import type { Room } from 'livekit-client';
@@ -10,23 +11,36 @@
 	// "Ask by voice": talk to the SheRules voice agent (LiveKit) from the league page.
 	// 1. Ask our server for a token (POST /api/voice/token), which also applies the daily limits
 	// 2. Join the private LiveKit room with the microphone on; the agent joins and answers
-	// 3. Hang up after the time limit, after VOICE_IDLE_SECONDS with nobody talking,
-	//    when the visitor taps End, or when leaving the page
+	// 3. When time runs out, mute the mic and let the agent finish its answer, then hang up.
+	//    Also hang up after VOICE_IDLE_SECONDS with nobody talking, when the visitor taps End,
+	//    or when leaving the page.
 	let { sport, league }: { sport: string; league: string } = $props();
+
+	/** The ring turns amber and pulses for the last stretch of the call. */
+	const WARNING_SECONDS = 30;
+	/** Longest the agent may keep talking after time runs out. */
+	const WRAP_UP_LIMIT_SECONDS = 20;
 
 	type Status = 'idle' | 'connecting' | 'live';
 	let status = $state<Status>('idle');
 	// The agent's state, from its 'lk.agent.state' attribute: initializing, listening, thinking, speaking.
 	let agentState = $state('initializing');
-	let errorMessage = $state('');
+	// Shown under the button: why a call couldn't start, or how it ended.
+	let message = $state('');
 	// Some browsers (notably iPhone Safari) block audio until another tap.
 	let audioBlocked = $state(false);
 	let secondsLeft = $state(0);
+	let maxSeconds = $state(1);
+	// Time's up: the mic is off and the agent is finishing its answer.
+	let wrappingUp = $state(false);
 
 	let room: Room | null = null;
-	let countdown: ReturnType<typeof setInterval> | undefined;
+	let ticker: ReturnType<typeof setInterval> | undefined;
 	// Seconds in a row with nobody talking and the agent not thinking or answering.
 	let silentSeconds = 0;
+	let wrapUpSeconds = 0;
+	// Voice calls left today after this one, from the server (undefined in local development).
+	let sessionsLeft: number | undefined;
 	const audioElements: HTMLMediaElement[] = [];
 
 	const STATE_LABELS: Record<string, string> = {
@@ -37,9 +51,14 @@
 		speaking: 'Answering…'
 	};
 
+	let agentBusy = $derived(agentState === 'thinking' || agentState === 'speaking');
+	let statusLabel = $derived(
+		wrappingUp ? 'Time’s up. Finishing this answer…' : (STATE_LABELS[agentState] ?? STATE_LABELS.initializing)
+	);
+
 	async function start() {
 		status = 'connecting';
-		errorMessage = '';
+		message = '';
 		try {
 			const response = await fetch('/api/voice/token', {
 				method: 'POST',
@@ -49,7 +68,7 @@
 			const session = await response.json();
 			if (!response.ok) {
 				status = 'idle';
-				errorMessage = refusalMessage(response.status, session.reason);
+				message = refusalMessage(response.status, session.reason);
 				return;
 			}
 
@@ -80,29 +99,54 @@
 
 			audioBlocked = !newRoom.canPlaybackAudio;
 			agentState = 'initializing';
-			status = 'live';
+			sessionsLeft = session.sessionsLeft;
+			maxSeconds = session.maxSeconds;
 			secondsLeft = session.maxSeconds;
 			silentSeconds = 0;
-			// Once a second: count down, and hang up if the call has gone quiet.
-			countdown = setInterval(() => {
-				secondsLeft -= 1;
-				const someoneTalking = newRoom.activeSpeakers.length > 0;
-				const agentBusy = agentState === 'thinking' || agentState === 'speaking';
-				silentSeconds = someoneTalking || agentBusy ? 0 : silentSeconds + 1;
-
-				if (secondsLeft <= 0) {
-					endWithNotice('Call ended at the time limit.');
-				} else if (silentSeconds >= VOICE_IDLE_SECONDS) {
-					endWithNotice(`Call ended after ${VOICE_IDLE_SECONDS} seconds of silence.`);
-				}
-			}, 1000);
+			wrappingUp = false;
+			status = 'live';
+			ticker = setInterval(() => tick(newRoom), 1000);
 		} catch (err) {
 			await stop();
-			errorMessage =
+			message =
 				err instanceof Error && err.name === 'NotAllowedError'
 					? 'Allow microphone access in your browser to ask by voice.'
 					: "Couldn't start voice. Please try again, or type your question.";
 		}
+	}
+
+	/** Runs once a second during a call: counts down, and ends the call gently when it's time. */
+	function tick(currentRoom: Room) {
+		if (wrappingUp) {
+			// Let the agent finish its answer, but not indefinitely.
+			wrapUpSeconds += 1;
+			if (!agentBusy || wrapUpSeconds >= WRAP_UP_LIMIT_SECONDS) endWith(`That's time! ${callsLeftText()}`);
+			return;
+		}
+
+		secondsLeft = Math.max(0, secondsLeft - 1);
+		const someoneTalking = currentRoom.activeSpeakers.length > 0;
+		silentSeconds = someoneTalking || agentBusy ? 0 : silentSeconds + 1;
+
+		if (secondsLeft === 0) {
+			beginWrapUp(currentRoom);
+		} else if (silentSeconds >= VOICE_IDLE_SECONDS) {
+			endWith(`Call ended after ${VOICE_IDLE_SECONDS} seconds of quiet. ${callsLeftText()}`);
+		}
+	}
+
+	/** Time's up: stop taking questions, and hang up once the agent finishes speaking. */
+	function beginWrapUp(currentRoom: Room) {
+		wrappingUp = true;
+		wrapUpSeconds = 0;
+		currentRoom.localParticipant.setMicrophoneEnabled(false).catch(() => {});
+		if (!agentBusy) endWith(`That's time! ${callsLeftText()}`);
+	}
+
+	/** Hangs up and shows how the call ended, under the button. */
+	async function endWith(closing: string) {
+		await stop();
+		message = closing.trim();
 	}
 
 	async function stop() {
@@ -112,23 +156,24 @@
 		await current?.disconnect();
 	}
 
-	/** Hangs up and says why, under the button. */
-	async function endWithNotice(notice: string) {
-		await stop();
-		errorMessage = notice;
-	}
-
 	/** Removes the agent's audio and resets the button. Safe to call more than once. */
 	function cleanUp() {
-		clearInterval(countdown);
+		clearInterval(ticker);
 		for (const element of audioElements.splice(0)) element.remove();
 		audioBlocked = false;
+		wrappingUp = false;
 		status = 'idle';
 	}
 
+	function callsLeftText(): string {
+		if (sessionsLeft === undefined) return '';
+		if (sessionsLeft === 0) return 'That was your last voice call today. You can still type questions.';
+		return `You have ${sessionsLeft} voice call${sessionsLeft === 1 ? '' : 's'} left today.`;
+	}
+
 	function refusalMessage(httpStatus: number, reason?: string): string {
-		if (reason === 'visitor_limit') return "That's your voice conversations for today. You can still type questions.";
-		if (reason === 'global_limit') return "Voice is at capacity for today. You can still type questions.";
+		if (reason === 'visitor_limit') return "That's your voice calls for today. You can still type questions.";
+		if (reason === 'global_limit') return 'Voice is at capacity for today. You can still type questions.';
 		if (httpStatus === 400) return 'Voice is not available for this league yet.';
 		return 'Voice is unavailable right now. You can still type questions.';
 	}
@@ -145,15 +190,20 @@
 
 <div class="mt-3" aria-live="polite">
 	{#if status === 'live'}
-		<div class="flex flex-wrap items-center gap-3 rounded-2xl border bg-card px-4 py-3" role="status">
-			<span class="relative flex size-3 shrink-0" aria-hidden="true">
-				<span class="absolute inline-flex size-full animate-ping rounded-full bg-sport opacity-60"></span>
-				<span class="relative inline-flex size-3 rounded-full bg-sport"></span>
-			</span>
-			<span class="min-w-0 flex-1 text-sm font-medium">
-				{STATE_LABELS[agentState] ?? STATE_LABELS.initializing}
-			</span>
-			<span class="text-xs text-muted-foreground tabular-nums" title="Time left">{formatTime(secondsLeft)}</span>
+		<div class="flex flex-wrap items-center gap-3 rounded-2xl border bg-card px-3 py-2.5" role="status">
+			<VoiceRing
+				remaining={secondsLeft / maxSeconds}
+				warning={secondsLeft <= WARNING_SECONDS}
+				micOff={wrappingUp}
+				label="{formatTime(secondsLeft)} left in this call"
+			/>
+			<span class="min-w-0 flex-1 text-sm font-medium">{statusLabel}</span>
+			<!-- An exact countdown for the last stretch, for anyone who'd rather read a number than the ring. -->
+			{#if secondsLeft <= WARNING_SECONDS && !wrappingUp}
+				<span class="text-sm font-semibold text-voice-warning-text tabular-nums" aria-hidden="true">
+					{formatTime(secondsLeft)}
+				</span>
+			{/if}
 			{#if audioBlocked}
 				<Button size="sm" variant="outline" class="rounded-full" onclick={() => room?.startAudio()}>
 					<Volume2Icon class="size-4" /> Tap to hear
@@ -173,8 +223,8 @@
 			<MicIcon class="size-4 text-sport" />
 			{status === 'connecting' ? 'Connecting…' : 'Ask by voice'}
 		</Button>
-		{#if errorMessage}
-			<p class="mt-2 pl-1 text-sm text-muted-foreground" role="alert">{errorMessage}</p>
+		{#if message}
+			<p class="mt-2 pl-1 text-sm text-muted-foreground">{message}</p>
 		{/if}
 	{/if}
 </div>

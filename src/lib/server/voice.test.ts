@@ -84,6 +84,19 @@ describe('POST /api/voice/token', () => {
 		assert.notEqual(jwtPayload(first.body.token).video.room, jwtPayload(second.body.token).video.room);
 	});
 
+	it('includes how many voice calls are left today, for the closing message', async () => {
+		const { body } = await handleVoiceToken(request({ sessionsLeft: async () => 2 }));
+		assert.ok('token' in body);
+		assert.equal(body.sessionsLeft, 2);
+	});
+
+	it('still starts the call if the remaining count can’t be read', async () => {
+		const { status, body } = await handleVoiceToken(request({ sessionsLeft: async () => { throw new Error('Redis down'); } }));
+		assert.equal(status, 200);
+		assert.ok('token' in body);
+		assert.equal(body.sessionsLeft, undefined);
+	});
+
 	it('works without limits in local development (takeSession null)', async () => {
 		assert.equal((await handleVoiceToken(request({ takeSession: null }))).status, 200);
 	});

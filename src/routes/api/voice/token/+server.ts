@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { dev } from '$app/env';
 import { limiter, voiceConfig } from '#lib/server/clients.ts';
-import { takeAsk, VOICE_LIMITS } from '#lib/server/rate-limit.ts';
+import { asksLeft, takeAsk, VOICE_LIMITS } from '#lib/server/rate-limit.ts';
 import { handleVoiceToken } from '#lib/server/voice.ts';
 import type { RequestHandler } from './$types';
 
@@ -15,6 +15,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 	// Daily voice limits apply on the deployed site, as for typed questions. Without them
 	// there'd be no cap on voice minutes, so production refuses instead.
 	let takeSession: (() => ReturnType<typeof takeAsk>) | null = null;
+	let sessionsLeft: (() => Promise<number>) | null = null;
 	if (!dev) {
 		const dailyLimits = limiter;
 		if (!dailyLimits) {
@@ -22,9 +23,16 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 			return json({ error: 'Voice is temporarily unavailable.' }, { status: 503 });
 		}
 		takeSession = () => takeAsk(dailyLimits, getClientAddress(), VOICE_LIMITS);
+		sessionsLeft = () => asksLeft(dailyLimits, getClientAddress(), VOICE_LIMITS);
 	}
 
-	const { status, body } = await handleVoiceToken({ config: voiceConfig, sport: input.sport, league: input.league, takeSession });
+	const { status, body } = await handleVoiceToken({
+		config: voiceConfig,
+		sport: input.sport,
+		league: input.league,
+		takeSession,
+		sessionsLeft
+	});
 	// Tokens are single-use and per visitor, so never cache them.
 	return json(body, { status, headers: { 'cache-control': 'no-store' } });
 };
