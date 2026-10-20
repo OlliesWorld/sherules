@@ -3,19 +3,22 @@
 
 const SPORT_NAMES: Record<string, string> = {
 	volleyball: 'Volleyball',
-	basketball: 'Basketball'
+	basketball: 'Basketball',
+	soccer: 'Soccer'
 };
 
 const LEAGUE_NAMES: Record<string, string> = {
 	ncaa: 'NCAA',
 	pro: 'Pro',
-	wnba: 'WNBA'
+	wnba: 'WNBA',
+	nwsl: 'NWSL'
 };
 
 const LEAGUE_LEVELS: Record<string, string> = {
 	ncaa: 'College',
 	pro: 'Professional',
-	wnba: 'Professional'
+	wnba: 'Professional',
+	nwsl: 'Professional'
 };
 
 // Leagues answered from another organization's rulebook name it in the page banner,
@@ -24,6 +27,10 @@ const BORROWED_RULEBOOKS: Record<string, { rulebook: string; note: string }> = {
 	'volleyball/pro': {
 		rulebook: 'USA Volleyball Indoor Rules 2025-2027',
 		note: 'LOVB and MLV may use their own variations of these rules.'
+	},
+	'soccer/nwsl': {
+		rulebook: 'IFAB Laws of the Game 2026/27',
+		note: 'NWSL plays under the IFAB Laws of the Game. League rules like substitutions and card suspensions come from the NWSL’s 2026 Competition Rules & Regulations.'
 	}
 };
 
@@ -40,6 +47,12 @@ const EXAMPLE_QUESTIONS: Record<string, string[]> = {
 		'How many fouls before a player fouls out?',
 		'What is a flagrant foul?',
 		'When does a team shoot bonus free throws?'
+	],
+	soccer: [
+		'When is a player offside?',
+		'How many substitutions does each team get?',
+		'What gets a player a red card?',
+		'What happens if the game is tied?'
 	]
 };
 

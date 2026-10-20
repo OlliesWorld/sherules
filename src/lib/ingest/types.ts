@@ -7,9 +7,12 @@ export type Division = 'all' | 'd1' | 'd2-d3';
 export type ParserName =
 	| 'ncaa-rulebook' // numbered headings: 1.2 SECTION / 1.2.3 Article (volleyball)
 	| 'ncaa-sections' // labeled headings: SECTION 2. / Art. 3. (basketball)
+	| 'ncaa-articles' // numbered sections, untitled articles: 1.1 SECTION / 1.1.1 text (soccer)
 	| 'fivb-rules' // FIVB layout: RULE 1. / 1.2 Sub-rule / 1.2.1: points (USA Volleyball)
 	| 'usav-casebook' // numbered cases with Ruling and Reference (USA Volleyball casebook)
-	| 'nba-rules'; // NBA layout: RULE NO. 1— / Section I— / a. items (WNBA)
+	| 'nba-rules' // NBA layout: RULE NO. 1— / Section I— / a. items (WNBA)
+	| 'ifab-laws' // IFAB Laws of the Game: Law 1 / 1. Section / subheadings (NWSL)
+	| 'caps-headings'; // short league documents under ALL-CAPS HEADINGS: (NWSL competition rules)
 
 /** A run of pages (1-based, inclusive) that a parser should read, and what kind of content it holds. */
 export interface PageRange {
@@ -18,6 +21,11 @@ export interface PageRange {
 	type: ChunkType;
 	/** A glossary laid out as "TERM: explanation", one chunk per term. */
 	layout?: 'definitions';
+	/**
+	 * Names the part of the book this range holds, for parts whose printed title can't be
+	 * read reliably from the PDF (e.g. the IFAB protocols, titled in the page margin).
+	 */
+	title?: string;
 }
 
 /** A labeled page range that is deliberately not ingested. Listed in the summary so skips are visible. */

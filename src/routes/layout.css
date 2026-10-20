@@ -87,6 +87,19 @@
 	--sport-h: 55; /* orange */
 }
 
+/* Navy #001e60. Much darker than the other accents, so it sets its own lightness:
+   exactly #001e60 in light mode, and a lighter blue of the same hue in dark mode,
+   where navy would disappear into the navy background. */
+[data-sport='soccer'] {
+	--sport-l: 26.8%;
+	--sport-c: 0.122;
+	--sport-h: 262; /* navy */
+}
+
+.dark [data-sport='soccer'] {
+	--sport-l: 72%;
+}
+
 /* Built from the parts above. Declared on [data-sport] too, so each sport section recomputes them. */
 :root,
 [data-sport] {

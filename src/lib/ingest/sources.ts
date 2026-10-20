@@ -133,6 +133,86 @@ export const sources: Source[] = [
 			{ from: 10, to: 11, reason: 'Court diagram' },
 			{ from: 91, to: 91, reason: 'Back cover' }
 		]
+	},
+	{
+		id: 'ncaa-soccer-2026-27',
+		name: 'NCAA Men’s and Women’s Soccer Rules Book 2026 and 2027',
+		url: 'https://ncaaorg.s3.amazonaws.com/championships/sports/soccer/rules/PRXSO_RulesBook.pdf',
+		file: 'data/soccer/ncaa-soccer-rules-2026-27.pdf',
+		sport: 'soccer',
+		league: 'ncaa',
+		// Two-season book (updated Aug. 10, 2026); labeled with the current season.
+		season: '2026-27',
+		// One book for men and women. Differences are inline ("For Division I men only, ..."),
+		// and the answer prompt asks for the women's rule where they differ.
+		division: 'all',
+		parser: 'ncaa-articles',
+		ranges: [
+			{ from: 13, to: 89, type: 'rule' } // The Rules introduction, then Rules 1-17
+		],
+		skipped: [
+			{ from: 1, to: 5, reason: 'Cover, title page, copyright' },
+			{ from: 6, to: 6, reason: 'Table of contents' },
+			{ from: 7, to: 8, reason: 'Rules committee members' },
+			{ from: 9, to: 11, reason: 'Major rules changes summary (repeats rule text)' },
+			{ from: 12, to: 12, reason: 'Significant editorial changes (list of rule numbers)' },
+			{ from: 90, to: 91, reason: 'Appendices A-B: referee and assistant referee signals' },
+			{ from: 92, to: 95, reason: 'Appendices C-D: concussions, accommodations for disabilities' },
+			{ from: 96, to: 98, reason: 'Index' }
+		],
+		skipPages: {
+			14: 'Contact information for the rules editor and officials coordinator',
+			16: 'Field diagram (figure, measurements only)'
+		}
+	},
+
+	// NWSL: matches are played under the IFAB Laws of the Game, plus the league's own
+	// Competition Rules & Regulations (substitutions, suspensions, standings, ...).
+	{
+		id: 'ifab-laws-2026-27',
+		name: 'IFAB Laws of the Game 2026/27',
+		url: 'https://downloads.theifab.com/downloads/laws-of-the-game-202627-double-pages?l=en',
+		file: 'data/soccer/ifab-laws-2026-27.pdf',
+		sport: 'soccer',
+		league: 'nwsl',
+		season: '2026',
+		division: 'all',
+		parser: 'ifab-laws',
+		// Each PDF page is a two-page spread. The protocols' printed titles sit in the margin,
+		// so their ranges name them here.
+		ranges: [
+			{ from: 12, to: 12, type: 'rule', title: 'Time-limited substitution protocol' },
+			{ from: 13, to: 13, type: 'rule', title: 'Off-field treatment and assessment protocol' },
+			{ from: 14, to: 14, type: 'rule', title: 'Throw-in and goal-kick countdown protocol' },
+			{ from: 15, to: 16, type: 'rule', title: '‘Only the captain’ guidelines' },
+			{ from: 20, to: 21, type: 'rule', title: 'Additional permanent concussion substitutions protocol' },
+			{ from: 23, to: 76, type: 'rule' }, // Laws 1-17
+			{ from: 77, to: 81, type: 'rule', title: 'VAR protocol' }
+		],
+		skipped: [
+			{ from: 1, to: 8, reason: 'Cover, contents, about the Laws' },
+			{ from: 9, to: 11, reason: 'Notes on the Laws, general modifications for youth and grassroots football' },
+			{ from: 17, to: 19, reason: 'Sin bins and return substitutes (youth and grassroots options, not used by NWSL)' },
+			{ from: 22, to: 22, reason: 'Laws of the Game title page' },
+			{ from: 82, to: 83, reason: 'FIFA Quality Programme' },
+			{ from: 84, to: 97, reason: 'Law changes 2026/27 (summary and details, repeats Law text)' },
+			{ from: 98, to: 131, reason: 'Glossary and practical guidelines for match officials (possible later addition)' }
+		]
+	},
+	{
+		id: 'nwsl-competition-rules-2026',
+		name: 'NWSL 2026 Competition Rules & Regulations (June 24 update)',
+		url: 'https://images.nwslsoccer.com/image/private/t_q-good/prd/hxoaampu8dszzp4ysbss.pdf',
+		file: 'data/soccer/nwsl-competition-rules-2026.pdf',
+		sport: 'soccer',
+		league: 'nwsl',
+		season: '2026',
+		division: 'all',
+		parser: 'caps-headings',
+		ranges: [
+			{ from: 1, to: 17, type: 'rule' } // the whole document
+		],
+		skipped: []
 	}
 ];
 

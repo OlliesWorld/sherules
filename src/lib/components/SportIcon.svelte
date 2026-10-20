@@ -23,6 +23,10 @@
 		{#if sport === 'basketball'}
 			<path d="M4 16h24M16 4v24" />
 			<path d="M7 7.5c4 2.5 4 14.5 0 17M25 7.5c-4 2.5-4 14.5 0 17" />
+		{:else if sport === 'soccer'}
+			<!-- A filled center patch with seams running out to the edge. -->
+			<path d="M16 11.5l4.28 3.11-1.63 5.03h-5.3l-1.63-5.03z" fill="currentColor" />
+			<path d="M16 11.5V4M20.28 14.61l7.13-2.32M18.65 19.64l4.4 6.07M13.35 19.64l-4.4 6.07M11.72 14.61l-7.13-2.32" />
 		{:else}
 			<path d="M16 4v24M4 16h24" />
 		{/if}

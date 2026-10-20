@@ -7,9 +7,12 @@
 // Source ids are listed in src/lib/ingest/sources.ts.
 import { parseNcaaRulebook } from '#lib/ingest/chunk-ncaa-rulebook.ts';
 import { parseNcaaSections } from '#lib/ingest/chunk-ncaa-sections.ts';
+import { parseNcaaArticles } from '#lib/ingest/chunk-ncaa-articles.ts';
 import { parseFivbRules } from '#lib/ingest/chunk-fivb-rules.ts';
 import { parseUsavCasebook } from '#lib/ingest/chunk-usav-casebook.ts';
 import { parseNbaRules } from '#lib/ingest/chunk-nba-rules.ts';
+import { parseIfabLaws } from '#lib/ingest/chunk-ifab-laws.ts';
+import { parseCapsHeadings } from '#lib/ingest/chunk-caps-headings.ts';
 import { readPdfPages } from '#lib/ingest/pdf.ts';
 import { getSource, sources } from '#lib/ingest/sources.ts';
 import type { ParsedChunk, ParserName, ParseResult, Source } from '#lib/ingest/types.ts';
@@ -19,9 +22,12 @@ import { createEmbedder, documentInput, EMBEDDING_MODEL_TAG } from '#lib/server/
 const parsers: Record<ParserName, (pages: string[], source: Source) => ParseResult> = {
 	'ncaa-rulebook': parseNcaaRulebook,
 	'ncaa-sections': parseNcaaSections,
+	'ncaa-articles': parseNcaaArticles,
 	'fivb-rules': parseFivbRules,
 	'usav-casebook': parseUsavCasebook,
-	'nba-rules': parseNbaRules
+	'nba-rules': parseNbaRules,
+	'ifab-laws': parseIfabLaws,
+	'caps-headings': parseCapsHeadings
 };
 
 async function main() {
