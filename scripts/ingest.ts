@@ -13,6 +13,7 @@ import { parseUsavCasebook } from '#lib/ingest/chunk-usav-casebook.ts';
 import { parseNbaRules } from '#lib/ingest/chunk-nba-rules.ts';
 import { parseIfabLaws } from '#lib/ingest/chunk-ifab-laws.ts';
 import { parseCapsHeadings } from '#lib/ingest/chunk-caps-headings.ts';
+import { parseWorldRugbyLaws } from '#lib/ingest/chunk-world-rugby-laws.ts';
 import { readPdfPages } from '#lib/ingest/pdf.ts';
 import { getSource, sources } from '#lib/ingest/sources.ts';
 import type { ParsedChunk, ParserName, ParseResult, Source } from '#lib/ingest/types.ts';
@@ -27,7 +28,8 @@ const parsers: Record<ParserName, (pages: string[], source: Source) => ParseResu
 	'usav-casebook': parseUsavCasebook,
 	'nba-rules': parseNbaRules,
 	'ifab-laws': parseIfabLaws,
-	'caps-headings': parseCapsHeadings
+	'caps-headings': parseCapsHeadings,
+	'world-rugby-laws': parseWorldRugbyLaws
 };
 
 async function main() {

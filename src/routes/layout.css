@@ -100,6 +100,18 @@
 	--sport-l: 72%;
 }
 
+/* Red #C42032 in light mode; lighter and a little softer in dark mode, so it reads on navy. */
+[data-sport='rugby'] {
+	--sport-l: 53.1%;
+	--sport-c: 0.196;
+	--sport-h: 22.5; /* red */
+}
+
+.dark [data-sport='rugby'] {
+	--sport-l: 72%;
+	--sport-c: 0.15;
+}
+
 /* Built from the parts above. Declared on [data-sport] too, so each sport section recomputes them. */
 :root,
 [data-sport] {

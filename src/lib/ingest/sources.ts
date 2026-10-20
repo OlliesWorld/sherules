@@ -213,6 +213,38 @@ export const sources: Source[] = [
 			{ from: 1, to: 17, type: 'rule' } // the whole document
 		],
 		skipped: []
+	},
+
+	// Rugby: no US league publishes its own rulebook yet. College (NIRA and others), USA Rugby
+	// competitions and Women's Elite Rugby all play World Rugby's Laws, so one page covers them.
+	{
+		id: 'world-rugby-laws-2026',
+		name: 'World Rugby Laws of the Game 2026',
+		url: 'https://passport.world.rugby/media/soypxfea/2607en-world-rugby-laws-final-compressed.pdf',
+		file: 'data/rugby/world-rugby-laws-2026.pdf',
+		sport: 'rugby',
+		league: 'all',
+		season: '2026',
+		division: 'all',
+		parser: 'world-rugby-laws',
+		ranges: [
+			{ from: 20, to: 27, type: 'rule', layout: 'definitions' },
+			{ from: 30, to: 122, type: 'rule' }, // Laws 1-21
+			{ from: 127, to: 135, type: 'rule', title: 'Sevens' } // college plays sevens in the spring
+		],
+		skipped: [
+			{ from: 1, to: 5, reason: 'Cover, copyright, contents, foreword' },
+			{ from: 6, to: 18, reason: 'Playing charter (philosophy, not laws), key to text and diagrams' },
+			{ from: 19, to: 19, reason: 'Definitions title page' },
+			{ from: 28, to: 29, reason: 'Laws of the game title pages' },
+			{ from: 123, to: 125, reason: 'Under-19 variations' },
+			{ from: 126, to: 126, reason: 'Sevens title page' },
+			{ from: 136, to: 147, reason: '10s and Game-On (community) variations' },
+			{ from: 148, to: 160, reason: 'Match official signals, back cover' }
+		],
+		skipPages: {
+			30: 'Ground diagram (labels only)'
+		}
 	}
 ];
 

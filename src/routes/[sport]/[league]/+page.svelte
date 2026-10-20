@@ -6,7 +6,7 @@
 	import VoiceAgent from '#lib/components/VoiceAgent.svelte';
 	import { Button } from '#lib/components/ui/button/index.ts';
 	import { Input } from '#lib/components/ui/input/index.ts';
-	import { exampleQuestions, leagueName, rulebookLabel, rulebookNote, sportName } from '#lib/labels.ts';
+	import { exampleQuestions, pageHeading, rulebookLabel, rulebookNote } from '#lib/labels.ts';
 	import type { PageProps } from './$types';
 
 	// `form` holds whatever the `ask` action returned (or passed to fail()).
@@ -47,7 +47,7 @@
 </script>
 
 <svelte:head>
-	<title>{leagueName(data.league)} {sportName(data.sport)} rules · SheRules</title>
+	<title>{pageHeading(data.sport, data.league)} rules · SheRules</title>
 </svelte:head>
 
 <!-- A snippet is a reusable chunk of markup, like a small inline component. -->
@@ -87,8 +87,7 @@
 
 <div class="motion-stagger">
 	<h1 class="font-display text-3xl font-black tracking-tight sm:text-4xl">
-		{leagueName(data.league)}
-		{sportName(data.sport)}
+		{pageHeading(data.sport, data.league)}
 	</h1>
 	<p class="mt-1 text-sm font-medium text-muted-foreground">
 		Answers from {rulebookLabel(data.sport, data.league, seasons)}

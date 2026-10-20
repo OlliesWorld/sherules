@@ -6,5 +6,5 @@ import type { PageServerLoad } from './$types';
 // (A static route like /dev/colors wins over the dynamic /[sport]/[league] route.)
 export const load: PageServerLoad = () => {
 	if (!dev) error(404, 'Not found');
-	return { sports: ['volleyball', 'basketball', 'soccer'] };
+	return { sports: ['volleyball', 'basketball', 'soccer', 'rugby'] };
 };

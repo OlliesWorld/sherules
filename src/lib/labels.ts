@@ -4,21 +4,24 @@
 const SPORT_NAMES: Record<string, string> = {
 	volleyball: 'Volleyball',
 	basketball: 'Basketball',
-	soccer: 'Soccer'
+	soccer: 'Soccer',
+	rugby: 'Rugby'
 };
 
 const LEAGUE_NAMES: Record<string, string> = {
 	ncaa: 'NCAA',
 	pro: 'Pro',
 	wnba: 'WNBA',
-	nwsl: 'NWSL'
+	nwsl: 'NWSL',
+	all: 'All leagues'
 };
 
 const LEAGUE_LEVELS: Record<string, string> = {
 	ncaa: 'College',
 	pro: 'Professional',
 	wnba: 'Professional',
-	nwsl: 'Professional'
+	nwsl: 'Professional',
+	all: 'College and pro'
 };
 
 // Leagues answered from another organization's rulebook name it in the page banner,
@@ -31,6 +34,10 @@ const BORROWED_RULEBOOKS: Record<string, { rulebook: string; note: string }> = {
 	'soccer/nwsl': {
 		rulebook: 'IFAB Laws of the Game 2026/27',
 		note: 'NWSL plays under the IFAB Laws of the Game. League rules like substitutions and card suspensions come from the NWSL’s 2026 Competition Rules & Regulations.'
+	},
+	'rugby/all': {
+		rulebook: 'World Rugby Laws of the Game 2026',
+		note: 'Covers college, USA Rugby and Women’s Elite Rugby (WER), which all play World Rugby’s laws. Leagues may add their own rules; we’ll add them as each league publishes a rulebook.'
 	}
 };
 
@@ -53,6 +60,12 @@ const EXAMPLE_QUESTIONS: Record<string, string[]> = {
 		'How many substitutions does each team get?',
 		'What gets a player a red card?',
 		'What happens if the game is tied?'
+	],
+	rugby: [
+		'What is a ruck?',
+		'How long is a yellow card?',
+		'What counts as a high tackle?',
+		'How long is a sevens match?'
 	]
 };
 
@@ -62,6 +75,11 @@ export function sportName(slug: string): string {
 
 export function leagueName(slug: string): string {
 	return LEAGUE_NAMES[slug] ?? slug.toUpperCase();
+}
+
+/** "NCAA Volleyball", or just "Rugby" for a page that covers all leagues. */
+export function pageHeading(sport: string, league: string): string {
+	return league === 'all' ? sportName(sport) : `${leagueName(league)} ${sportName(sport)}`;
 }
 
 export function leagueLevel(slug: string): string | undefined {
