@@ -5,7 +5,8 @@ const SPORT_NAMES: Record<string, string> = {
 	volleyball: 'Volleyball',
 	basketball: 'Basketball',
 	soccer: 'Soccer',
-	rugby: 'Rugby'
+	rugby: 'Rugby',
+	hockey: 'Hockey'
 };
 
 const LEAGUE_NAMES: Record<string, string> = {
@@ -13,7 +14,9 @@ const LEAGUE_NAMES: Record<string, string> = {
 	pro: 'Pro',
 	wnba: 'WNBA',
 	nwsl: 'NWSL',
-	all: 'All leagues'
+	all: 'All leagues',
+	pwhl: 'PWHL',
+	'usa-hockey': 'USA Hockey'
 };
 
 const LEAGUE_LEVELS: Record<string, string> = {
@@ -21,7 +24,9 @@ const LEAGUE_LEVELS: Record<string, string> = {
 	pro: 'Professional',
 	wnba: 'Professional',
 	nwsl: 'Professional',
-	all: 'College and pro'
+	all: 'College and pro',
+	pwhl: 'Professional',
+	'usa-hockey': 'Amateur and youth'
 };
 
 // Leagues answered from another organization's rulebook name it in the page banner,
@@ -66,6 +71,12 @@ const EXAMPLE_QUESTIONS: Record<string, string[]> = {
 		'How long is a yellow card?',
 		'What counts as a high tackle?',
 		'How long is a sevens match?'
+	],
+	hockey: [
+		'Is body checking allowed?',
+		'What is icing?',
+		'How long is a minor penalty?',
+		'When is a player offside?'
 	]
 };
 

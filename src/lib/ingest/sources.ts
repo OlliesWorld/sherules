@@ -245,6 +245,107 @@ export const sources: Source[] = [
 		skipPages: {
 			30: 'Ground diagram (labels only)'
 		}
+	},
+
+	{
+		id: 'ncaa-hockey-2026-28',
+		name: 'NCAA Men’s and Women’s Ice Hockey Rules 2026-27 and 2027-28',
+		url: 'https://ncaaorg.s3.amazonaws.com/championships/sports/icehockey/rules/PRXIH_RulesBook.pdf',
+		file: 'data/hockey/ncaa-hockey-rules.pdf',
+		sport: 'hockey',
+		league: 'ncaa',
+		// Two-season book (updated Oct. 16, 2026); labeled with the current season.
+		season: '2026-27',
+		// One book for men and women. Women's rules are Section 12 (Rule 94) and inline
+		// "Women’s Game:" articles; the answer prompt asks for the women's rule where they differ.
+		division: 'all',
+		parser: 'ncaa-hockey',
+		ranges: [
+			{ from: 14, to: 126, type: 'rule' }, // Sections 1-12 (Rules 1-94)
+			{ from: 133, to: 133, type: 'rule', title: 'Appendix A – Minigame Format' },
+			{ from: 134, to: 135, type: 'rule', title: 'Appendix B – NCAA Ice Hockey Shootout Protocol' },
+			{ from: 142, to: 144, type: 'rule', title: 'Appendix F – Protocols for 3-on-3 Overtime' },
+			{ from: 145, to: 145, type: 'rule', title: 'Appendix G – Coincidental Penalties' }
+		],
+		skipped: [
+			{ from: 1, to: 5, reason: 'Cover, title page, copyright' },
+			{ from: 6, to: 6, reason: 'Table of contents' },
+			{ from: 7, to: 13, reason: 'Preface, rules committees, major rules changes, points of emphasis' },
+			{ from: 127, to: 132, reason: 'Reference tables (lists of rule numbers)' },
+			{ from: 136, to: 141, reason: 'Appendices C-E: concussions, faceoff location summary, accommodations' },
+			{ from: 146, to: 147, reason: 'Part II: interpretations (removed from the book, published separately)' },
+			{ from: 148, to: 177, reason: 'Parts III-IV: officials’ mechanics' },
+			{ from: 178, to: 185, reason: 'Index' }
+		]
+	},
+	{
+		id: 'ncaa-womens-hockey-interpretations-2026-1',
+		name: 'NCAA Women’s Ice Hockey Interpretations #1 (Sept. 23, 2026)',
+		url: 'https://ncaaorg.s3.amazonaws.com/championships/sports/icehockey/rules/PRWIH_Women%27sInterpretations1.pdf',
+		file: 'data/hockey/ncaa-womens-interpretations-1.pdf',
+		sport: 'hockey',
+		league: 'ncaa',
+		season: '2026-27',
+		division: 'all',
+		parser: 'memo',
+		ranges: [{ from: 1, to: 2, type: 'interpretation' }],
+		skipped: []
+	},
+	{
+		id: 'ncaa-womens-hockey-experimental-2026-27',
+		name: 'NCAA Women’s Ice Hockey Experimental Rule 2026-27',
+		url: 'https://ncaaorg.s3.amazonaws.com/championships/sports/icehockey/rules/2026_27_PRWIH_ExperimentalRules.pdf',
+		file: 'data/hockey/ncaa-womens-experimental-2026-27.pdf',
+		sport: 'hockey',
+		league: 'ncaa',
+		season: '2026-27',
+		division: 'all',
+		parser: 'memo',
+		ranges: [
+			{ from: 1, to: 1, type: 'rule', title: 'Experimental Rule 2026-27: Unlimited High Sticking (conference play only)' }
+		],
+		skipped: []
+	},
+	{
+		id: 'pwhl-rules-2025-26',
+		name: 'PWHL Official Rule Book 2025-2026',
+		url: 'https://assets.contentstack.io/v3/assets/bltebdb4296e05d53db/bltb8440fe08a5e6dc5/69178cd0a582d7db321ad107/2025-2026_PWHL_Rulebook.pdf',
+		file: 'data/hockey/2025-2026_PWHL_Rulebook.pdf',
+		sport: 'hockey',
+		league: 'pwhl',
+		season: '2025-26',
+		division: 'all',
+		parser: 'pwhl-rules',
+		ranges: [
+			{ from: 18, to: 159, type: 'rule' } // Sections 1-10 (Rules 1-89)
+		],
+		skipped: [
+			{ from: 1, to: 4, reason: 'Cover, copyright, officials roster' },
+			{ from: 5, to: 17, reason: 'Table of contents' },
+			{ from: 160, to: 188, reason: 'Section 11: reference tables (summaries of the rules)' }
+		]
+	},
+	{
+		id: 'usah-rules-casebook-2025-29',
+		name: 'USA Hockey Official Rules and Casebook of Ice Hockey 2025-29',
+		url: 'https://cdn3.sportngin.com/attachments/document/4f1a-3442850/2025-29_USAH_Playing_Rules___Casebook.pdf',
+		file: 'data/hockey/usah-rules-casebook-2025-29.pdf',
+		sport: 'hockey',
+		league: 'usa-hockey',
+		season: '2025-29',
+		division: 'all',
+		parser: 'usah-rules',
+		ranges: [
+			{ from: 35, to: 376, type: 'rule' }, // Sections 1-6, each with its casebook
+			{ from: 409, to: 416, type: 'rule', layout: 'definitions' } // Appendix V: glossary
+		],
+		skipped: [
+			{ from: 1, to: 6, reason: 'Cover, copyright, contents' },
+			{ from: 7, to: 34, reason: 'Preface: points of emphasis, player safety declaration, standards of play, codes of conduct, discipline policy' },
+			{ from: 377, to: 406, reason: 'Appendices I-IV: penalty summary, face-off locations, signals, rink diagrams' },
+			{ from: 407, to: 408, reason: 'Glossary title pages' },
+			{ from: 417, to: 476, reason: 'Appendices VI-VII: standard of play casebook, disabled hockey disciplines; index' }
+		]
 	}
 ];
 

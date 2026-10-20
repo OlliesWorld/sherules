@@ -13,7 +13,11 @@ export type ParserName =
 	| 'nba-rules' // NBA layout: RULE NO. 1— / Section I— / a. items (WNBA)
 	| 'ifab-laws' // IFAB Laws of the Game: Law 1 / 1. Section / subheadings (NWSL)
 	| 'caps-headings' // short league documents under ALL-CAPS HEADINGS: (NWSL competition rules)
-	| 'world-rugby-laws'; // World Rugby Laws of the Game: LAW 14 footer / SUBHEADING / 5. law (rugby)
+	| 'world-rugby-laws' // World Rugby Laws of the Game: LAW 14 footer / SUBHEADING / 5. law (rugby)
+	| 'ncaa-hockey' // NCAA ice hockey: RULE 94 - TITLE / 94.1 Title - text
+	| 'memo' // short rules memos: numbered rulings, or one titled topic (NCAA women's hockey)
+	| 'pwhl-rules' // NHL-style: Rule 24 Penalty Shot / 24.3 Designated Player (PWHL)
+	| 'usah-rules'; // USA Hockey: Rule 401 Penalties / (a) items, then each section's casebook situations
 
 /** A run of pages (1-based, inclusive) that a parser should read, and what kind of content it holds. */
 export interface PageRange {

@@ -112,6 +112,20 @@
 	--sport-c: 0.15;
 }
 
+/* Purple #33058d in light mode. In dark mode it's lighter and shifted a little further toward
+   purple, so it doesn't look like soccer's light blue on the navy background. */
+[data-sport='hockey'] {
+	--sport-l: 32.5%;
+	--sport-c: 0.187;
+	--sport-h: 284; /* purple */
+}
+
+.dark [data-sport='hockey'] {
+	--sport-l: 72%;
+	--sport-c: 0.16;
+	--sport-h: 300;
+}
+
 /* Built from the parts above. Declared on [data-sport] too, so each sport section recomputes them. */
 :root,
 [data-sport] {

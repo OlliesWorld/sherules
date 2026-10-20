@@ -19,11 +19,17 @@
 		stroke-linecap="round"
 		stroke-linejoin="round"
 	>
-		{#if sport === 'rugby'}
-			<!-- An oval ball on a diagonal, with a seam and three laces across it. -->
-			<g transform="rotate(-45 16 16)">
-				<ellipse cx="16" cy="16" rx="13" ry="7.5" />
-				<path d="M11 16h10M13 14.4v3.2M16 14.4v3.2M19 14.4v3.2" />
+		{#if sport === 'hockey'}
+			<!-- A puck seen from slightly above: flat top and a thick side. -->
+			<ellipse cx="16" cy="12" rx="12" ry="5" />
+			<path d="M4 12v7a12 5 0 0 0 24 0v-7" />
+		{:else if sport === 'rugby'}
+			<!-- A full oval ball on a diagonal, no laces: a seam band along its length and
+			     another curving around near one end, as on a real rugby ball. -->
+			<g transform="rotate(-35 16 16)">
+				<ellipse cx="16" cy="16" rx="12.5" ry="9" />
+				<path d="M3.8 15.2Q16 19.6 28.2 15.2" />
+				<path d="M22.6 8.4Q19.8 16 22.6 23.6" />
 			</g>
 		{:else}
 			<circle cx="16" cy="16" r="12" />
