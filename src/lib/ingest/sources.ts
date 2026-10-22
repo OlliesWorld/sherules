@@ -302,7 +302,7 @@ export const sources: Source[] = [
 		division: 'all',
 		parser: 'memo',
 		ranges: [
-			{ from: 1, to: 1, type: 'rule', title: 'Experimental Rule 2026-27: Unlimited High Sticking (conference play only)' }
+			{ from: 1, to: 1, type: 'rule', title: 'Experimental Rule 2026-27: Unlimited High Sticking (conference play only, not the NCAA postseason)' }
 		],
 		skipped: []
 	},

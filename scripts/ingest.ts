@@ -5,40 +5,12 @@
 //   npm run ingest -- <source-id> --dry-run   parse and print the summary only (no API calls, no DB)
 //
 // Source ids are listed in src/lib/ingest/sources.ts.
-import { parseNcaaRulebook } from '#lib/ingest/chunk-ncaa-rulebook.ts';
-import { parseNcaaSections } from '#lib/ingest/chunk-ncaa-sections.ts';
-import { parseNcaaArticles } from '#lib/ingest/chunk-ncaa-articles.ts';
-import { parseFivbRules } from '#lib/ingest/chunk-fivb-rules.ts';
-import { parseUsavCasebook } from '#lib/ingest/chunk-usav-casebook.ts';
-import { parseNbaRules } from '#lib/ingest/chunk-nba-rules.ts';
-import { parseIfabLaws } from '#lib/ingest/chunk-ifab-laws.ts';
-import { parseCapsHeadings } from '#lib/ingest/chunk-caps-headings.ts';
-import { parseWorldRugbyLaws } from '#lib/ingest/chunk-world-rugby-laws.ts';
-import { parseNcaaHockey } from '#lib/ingest/chunk-ncaa-hockey.ts';
-import { parseMemo } from '#lib/ingest/chunk-memo.ts';
-import { parsePwhlRules } from '#lib/ingest/chunk-pwhl-rules.ts';
-import { parseUsahRules } from '#lib/ingest/chunk-usah-rules.ts';
+import { parsers } from '#lib/ingest/parsers.ts';
 import { readPdfPages } from '#lib/ingest/pdf.ts';
 import { getSource, sources } from '#lib/ingest/sources.ts';
-import type { ParsedChunk, ParserName, ParseResult, Source } from '#lib/ingest/types.ts';
+import type { ParsedChunk, Source } from '#lib/ingest/types.ts';
 import { createDb, ensureSchema, replaceSourceChunks, type ChunkRow } from '#lib/server/db.ts';
 import { createEmbedder, documentInput, EMBEDDING_MODEL_TAG } from '#lib/server/embed.ts';
-
-const parsers: Record<ParserName, (pages: string[], source: Source) => ParseResult> = {
-	'ncaa-rulebook': parseNcaaRulebook,
-	'ncaa-sections': parseNcaaSections,
-	'ncaa-articles': parseNcaaArticles,
-	'fivb-rules': parseFivbRules,
-	'usav-casebook': parseUsavCasebook,
-	'nba-rules': parseNbaRules,
-	'ifab-laws': parseIfabLaws,
-	'caps-headings': parseCapsHeadings,
-	'world-rugby-laws': parseWorldRugbyLaws,
-	'ncaa-hockey': parseNcaaHockey,
-	memo: parseMemo,
-	'pwhl-rules': parsePwhlRules,
-	'usah-rules': parseUsahRules
-};
 
 async function main() {
 	const [sourceId, ...flags] = process.argv.slice(2);

@@ -1,4 +1,5 @@
 import type { GoogleGenAI } from '@google/genai';
+import { matchCitation } from './citations.ts';
 import type { RetrievedChunk } from './search.ts';
 
 // Fastest, cheapest stable Gemini model. Swap for 'gemini-3.8-flash' if answers
@@ -40,6 +41,8 @@ export interface GeneratedAnswer {
 	answer: string;
 	/** Rule refs that were cited AND were among the retrieved chunks. */
 	citedRefs: string[];
+	/** For tracing a "not found": what the model itself said, and citations that matched no chunk. */
+	notes: { modelFound: boolean; droppedRefs: string[] };
 }
 
 export async function generateAnswer(
@@ -65,21 +68,17 @@ export async function generateAnswer(
 	const parsed = JSON.parse(response.text ?? '{}') as { found?: boolean; answer?: string; citations?: string[] };
 
 	// Keep only citations that point at a chunk we actually sent. A rule number the
-	// model made up never reaches the user.
-	const retrievedRefs = new Map(chunks.map((chunk) => [normalizeRef(chunk.ruleRef), chunk.ruleRef]));
-	const citedRefs = [
-		...new Set(
-			(parsed.citations ?? [])
-				.map((ref) => retrievedRefs.get(normalizeRef(ref)))
-				.filter((ref): ref is string => ref !== undefined)
-		)
-	];
+	// model made up never reaches the user. A sub-rule the model cites ("Rule 11.3.1") counts
+	// for the chunk that holds it ("Rule 11.3"); see citations.ts.
+	const retrievedRefs = chunks.map((chunk) => chunk.ruleRef);
+	const matches = (parsed.citations ?? []).map((ref) => ({ ref, chunk: matchCitation(ref, retrievedRefs) }));
+	const citedRefs = [...new Set(matches.flatMap((m) => (m.chunk ? [m.chunk] : [])))];
+	const notes = { modelFound: parsed.found === true, droppedRefs: matches.filter((m) => !m.chunk).map((m) => m.ref) };
 
 	// Log what the model cited but we couldn't match, so a "not found" can be traced.
 	// Shows in the terminal locally and in Vercel's function logs.
-	const dropped = (parsed.citations ?? []).filter((ref) => !retrievedRefs.has(normalizeRef(ref)));
-	if (dropped.length > 0) {
-		console.warn('[answer] dropped citations not among retrieved chunks:', dropped, 'retrieved:', [...retrievedRefs.values()]);
+	if (notes.droppedRefs.length > 0) {
+		console.warn('[answer] dropped citations not among retrieved chunks:', notes.droppedRefs, 'retrieved:', retrievedRefs);
 	}
 	if (!parsed.found) {
 		console.warn('[answer] model reported found=false');
@@ -87,13 +86,8 @@ export async function generateAnswer(
 
 	// An answer with no valid citation isn't grounded in the rulebook, so treat it as not found.
 	if (!parsed.found || !parsed.answer || citedRefs.length === 0) {
-		return { found: false, answer: NOT_FOUND_ANSWER, citedRefs: [] };
+		return { found: false, answer: NOT_FOUND_ANSWER, citedRefs: [], notes };
 	}
 
-	return { found: true, answer: parsed.answer, citedRefs };
-}
-
-/** "Rule 13, Situation 1" and "13 situation 1" both become "13situation1". */
-function normalizeRef(ref: string): string {
-	return ref.toLowerCase().replace(/^rule/, '').replace(/[\s,]/g, '');
+	return { found: true, answer: parsed.answer, citedRefs, notes };
 }

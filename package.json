@@ -11,10 +11,12 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"ingest": "tsx --env-file-if-exists=.env scripts/ingest.ts",
+		"snapshot": "tsx scripts/snapshot.ts",
 		"db:check": "tsx --env-file-if-exists=.env scripts/db-check.ts",
 		"ask": "tsx --env-file-if-exists=.env scripts/ask.ts",
+		"eval": "tsx --env-file-if-exists=.env scripts/eval.ts",
 		"logs": "tsx --env-file-if-exists=.env scripts/logs.ts",
-		"test": "tsx --test src/lib/server/agent-search.test.ts src/lib/server/voice.test.ts"
+		"test": "tsx --test src/lib/server/agent-search.test.ts src/lib/server/voice.test.ts src/lib/server/citations.test.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-vercel": "^7.0.0",

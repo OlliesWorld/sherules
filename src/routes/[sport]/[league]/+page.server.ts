@@ -97,9 +97,9 @@ export const actions = {
 				})),
 				ms: Date.now() - startedAt
 			});
-			// The excerpts panel (all retrieved rule text, with distances) is a tuning aid.
-			// In production it's left out, so only the cited rules' text reaches the page.
-			return { question, result: dev ? result : { ...result, excerpts: [] } };
+			// The excerpts panel (all retrieved rule text, with distances) and the notes are
+			// tuning aids. In production they're left out, so only the cited rules' text reaches the page.
+			return { question, result: dev ? result : { ...result, excerpts: [], notes: undefined } };
 		} catch (err) {
 			console.error('askRulebook failed', err);
 			await logQuestion({ question, sport, league, result: 'error', ms: Date.now() - startedAt });

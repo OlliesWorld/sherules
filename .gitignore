@@ -27,3 +27,6 @@ vite.config.ts.timestamp-*
 
 # Local dev database
 local.db*
+
+# Eval run results (contain answer text from copyrighted rulebooks)
+/evals/results/

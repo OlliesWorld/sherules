@@ -82,16 +82,16 @@ Production site passes the launch checklist in SECURITY_PLAN §5.
 
 ---
 
-## Sprint 6: Evaluations (planned)
+## Sprint 6: Evaluations ✅ (first version)
 
-### Tasks
-- Labeled question set per league (20–40 each): question, expected rule refs, expected answer facts, "should be not-found" cases
-- promptfoo config calling `askRulebook()` directly (deps from `process.env`)
-- Metrics: expected ref in top 5 (retrieval), answer graded correct, false not-found rate
-- Use results to tune top-k, a distance cutoff, and the answer prompt; compare `gemini-3.5-flash-lite` vs `gemini-3.8-flash`
+### Delivered
+- `npm run eval`: 62 labeled questions across all 10 pages, run through `askRulebook()`, graded on retrieval, citation, answer facts and declines. A small script instead of promptfoo, so no new dependency
+- First run found that correct answers citing a sub-rule ("Rule 11.3.1" from chunk "Rule 11.3") were being replaced with "can't find that". Fixed in `citations.ts`; second run 61/62
+- Write-up and how-to: [EVALS.md](EVALS.md)
 
-### Demoable Output
-A report showing retrieval and answer accuracy per league, re-runnable after any change.
+### Still to do
+- Grow the question set from the question log
+- Use it to tune top-k and a distance cutoff, and to compare `gemini-3.5-flash-lite` vs `gemini-3.8-flash`
 
 ---
 
@@ -151,6 +151,8 @@ Each candidate is scored on:
 **Wave 4: Pro leagues without rulebooks.** AUSL softball, Women's Elite Rugby and others, using governing-body rules plus a visible "may differ" note, as Pro volleyball does today. Revisit if leagues publish their own.
 
 ### Checklist per sport
+
+Full step-by-step guide: [ADDING_A_SPORT.md](ADDING_A_SPORT.md).
 
 1. **Research:** official source URL(s), season, publisher's reuse terms, men's/women's coverage
 2. **Ingest:** download to `data/<sport>/` → `dump-pdf` → structure report → parser (reuse or new) → dry run → regression check of existing sources → ingest

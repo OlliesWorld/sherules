@@ -116,6 +116,15 @@ Each source declares: `id`, display `name`, official `url`, local `file` (in git
 | `usav-indoor-rules-2025-27` | `fivb-rules` | 20–78 rules, 103–104 definitions | 135 |
 | `usav-casebook-2025-27` | `usav-casebook` | 9–160 | 476 |
 | `wnba-rules-2026` | `nba-rules` | 12–81 rules, 81–90 comments | 123 + 18 |
+| `ncaa-soccer-2026-27` | `ncaa-articles` | 13–89 | 320 |
+| `ifab-laws-2026-27` (NWSL) | `ifab-laws` | 12–16, 20–21 protocols; 23–76 Laws 1–17; 77–81 VAR protocol | 103 |
+| `nwsl-competition-rules-2026` | `caps-headings` | 1–17 | 33 |
+| `world-rugby-laws-2026` (rugby, all leagues) | `world-rugby-laws` | 20–27 definitions, 30–122 Laws 1–21, 127–135 sevens variations | 223 |
+| `ncaa-hockey-2026-28` | `ncaa-hockey` | 14–126 rules; 133–135, 142–145 appendices | 312 |
+| `ncaa-womens-hockey-interpretations-2026-1` | `memo` | 1–2 | 4 |
+| `ncaa-womens-hockey-experimental-2026-27` | `memo` | 1 | 1 |
+| `pwhl-rules-2025-26` | `pwhl-rules` | 18–159 | 525 |
+| `usah-rules-casebook-2025-29` | `usah-rules` | 35–376 rules and casebook, 409–416 glossary | 128 + 652 |
 
 ### 4.2 Parsers (one per rulebook layout)
 
@@ -126,6 +135,16 @@ Each source declares: `id`, display `name`, official `url`, local `file` (in git
 | `chunk-fivb-rules.ts` | `RULE 1.` / `1.2 Sub-rule` / `1.2.1:` points, `USAV …:` modifications | Sub-rule (keeps FIVB text with USA Volleyball's changes); definitions glossary one per term |
 | `chunk-usav-casebook.ts` | Case number + situation / `Ruling:` / `Reference:` | Case |
 | `chunk-nba-rules.ts` | `RULE NO. 1—` / `Section I—` / `a.` items; Rule 12 parts A/B | Section; sections > 600 words split at lettered items into ~500-word pieces ("Rule 13, Section II, a–c"); Comments on the Rules one per topic |
+| `chunk-ncaa-articles.ts` | `RULE 1` / `1.1 SECTION` / untitled `1�1�1` articles | Article ("Rule 1.1.4"); list sections grouped with their lead-in ("Rule 12.7.1–12.7.4"); offside diagrams one each |
+| `chunk-ifab-laws.ts` | Law from page footer / `1. Section` / sentence-case subheadings | Section ("Law 12.2"), long ones split at subheadings; titled ranges for protocols and VAR |
+| `chunk-caps-headings.ts` | `ALL-CAPS HEADINGS:` with `A.` lettered parts | Heading; long policies split at lettered parts and titled items |
+| `chunk-world-rugby-laws.ts` | Law from page footer / caps subheadings / `5.` numbered laws | Subheading group ("Law 14.5–14.11"); definitions one per term; sevens variations one per Law. Restores the periods the PDF's text layer drops |
+| `chunk-ncaa-hockey.ts` | `RULE 94 - TITLE` / `94.1 Title - text` | Article ("Rule 94.1"), long ones split at items or sentences; titled appendices |
+| `chunk-memo.ts` | Numbered rulings with Situation / Ruling; one-topic memos | Ruling ("Interpretation 2 – …"); a one-topic memo keeps its heading and rule, without the process text |
+| `chunk-pwhl-rules.ts` | `Rule 24 Title` / `24.3 Title` (NHL style) | Article ("Rule 24.3"), long ones split at paragraphs |
+| `chunk-usah-rules.ts` | `Rule 401 Title` / `(a)` items; each section's casebook follows its rules | Rule ("Rule 401", long ones "Rule 604(c)–(f)"); case ("Rule 401, Situation 7"); glossary one per term |
+
+How to add a sport, league or source, including when to write a new parser: [ADDING_A_SPORT.md](ADDING_A_SPORT.md).
 
 Shared helpers (`pdf-lines.ts`): page-furniture removal, `�`→`.` fix (NCAA fonts), line rejoining that keeps list items on their own lines, hyphen rejoining, title case.
 
@@ -199,7 +218,9 @@ Production can use a **read-only** Turso token; ingest needs full access. Svelte
 |---|---|
 | `npm run dev` | Local dev server (no daily limit) |
 | `npm run ingest -- <id> [--dry-run]` | Parse/embed/store a source |
+| `npm run snapshot -- save\|compare [id...]` | Parser regression check: save every source's parser output, then compare after a change (no API calls) |
 | `npm run ask -- <sport> <league> "<q>"` | Ask from the terminal; prints retrieved chunks with distances |
+| `npm run eval [-- --page <sport/league> \| --id <id>]` | Run the labeled questions in `evals/questions.json`; see [EVALS.md](EVALS.md) |
 | `npm run logs [-- N]` | Newest N logged questions from Redis |
 | `npm run db:check` | Step-by-step Turso connection and vector check |
 | `npx tsx scripts/dump-pdf.ts <pdf>` | Print a PDF's extracted text by page (for writing parsers) |
@@ -246,7 +267,7 @@ See **SECURITY_PLAN.md** for the full review, open items and launch checklist. I
 
 ## 12. Future Technical Considerations
 
-- **Evals:** promptfoo calling `askRulebook()` directly; labeled questions with expected rule refs
+- **Evals:** built as `npm run eval` (no promptfoo; see [EVALS.md](EVALS.md)). Next: a model-graded correctness check if word matching proves too blunt
 - **Relevance cutoff:** skip the answer call when the best distance is clearly unrelated (tune from evals)
 - **Sources table:** move per-source metadata out of `chunks` to cut page-load row reads
 - **Checksums:** detect when an official PDF URL now serves a new edition

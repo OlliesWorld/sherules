@@ -1,7 +1,7 @@
 import type { Client } from '@libsql/client';
 import type { GoogleGenAI } from '@google/genai';
 import { getSource } from '../ingest/sources.ts';
-import { generateAnswer, NOT_FOUND_ANSWER } from './answer.ts';
+import { generateAnswer, NOT_FOUND_ANSWER, type GeneratedAnswer } from './answer.ts';
 import type { Embedder } from './embed.ts';
 import { searchChunks, type RetrievedChunk } from './search.ts';
 
@@ -28,6 +28,8 @@ export interface RulebookAnswer {
 	citations: Citation[];
 	/** Every chunk sent to the model, cited or not, for checking retrieval. */
 	excerpts: (RetrievedChunk & { sourceName: string; url: string })[];
+	/** For tracing a "not found" (see GeneratedAnswer). Absent when nothing was retrieved. */
+	notes?: GeneratedAnswer['notes'];
 }
 
 /** The whole flow: retrieve the closest chunks, then answer from them. */
@@ -57,5 +59,5 @@ export async function askRulebook(
 		return { ruleRef: ref, sourceName: excerpt.sourceName, url: excerpt.url, page: excerpt.page, excerpt: excerpt.text };
 	});
 
-	return { found: generated.found, answer: generated.answer, citations, excerpts };
+	return { found: generated.found, answer: generated.answer, citations, excerpts, notes: generated.notes };
 }

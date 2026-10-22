@@ -1,4 +1,4 @@
-import { addChunk as addSharedChunk, collectLines, openChunk, type OpenChunk } from './pdf-lines.ts';
+import { addChunk as addSharedChunk, collectLines, isAllCaps, openChunk, type OpenChunk } from './pdf-lines.ts';
 import type { PageProblem, ParsedChunk, ParseResult, Source } from './types.ts';
 
 // Chunker for short rules memos (e.g. NCAA women's ice hockey interpretations):
@@ -8,12 +8,17 @@ import type { PageProblem, ParsedChunk, ParseResult, Source } from './types.ts';
 //   • Ruling: ...
 //   SP:pa / cc: ...                            sign-off, skipped
 //
-// A range with a `title` is a one-topic memo (e.g. an experimental rule): one chunk, named by the title.
+// A range with a `title` is a one-topic memo (e.g. an experimental rule): one chunk, named by the
+// title. It keeps the memo's all-caps heading ("2026-27 SEASON – FOR CONFERENCE PLAY ONLY") and the
+// rule from its topic heading on ("Unlimited High Sticking:"), and skips the process text between
+// (who to contact, data collection), which buries the rule when searching.
 
 const NUMBERED_ITEM = /^(\d+)\. (.+?)\.?$/;
 // Repeated at the top of later pages: memo title, date, "Page No. 2", a rule line.
 const PAGE_FURNITURE = /^(Page No\. \d+|_+|NCAA .* Rules Interpretations|[A-Z][a-z]+ \d{1,2}, \d{4})$/;
 const SIGN_OFF = /^([A-Z]{2}:[a-z]{2}|cc:)/;
+// A one-topic memo's topic, on its own line: "Unlimited High Sticking:".
+const TOPIC_HEADING = /^[A-Z][^.:]{2,60}:$/;
 
 const STARTS_NEW_LINE = /^(•|Note:|\d+\.\s)/;
 
@@ -27,7 +32,10 @@ export function parseMemo(pages: string[], source: Source): ParseResult {
 
 		if (range.title) {
 			const memo = openChunk(range.title, range.title, range.from);
-			memo.lines = lines.map((line) => line.raw);
+			const heading = lines.filter((line, i) => i < 3 && isAllCaps(line.raw)).map((line) => line.raw);
+			const topicStart = lines.findIndex((line) => TOPIC_HEADING.test(line.raw));
+			if (topicStart === -1) problems.push({ page: range.from, reason: 'No topic heading found, kept the whole memo' });
+			memo.lines = [...heading, ...lines.slice(topicStart === -1 ? heading.length : topicStart).map((line) => line.raw)];
 			add(memo, range.type);
 			continue;
 		}
