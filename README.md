@@ -2,11 +2,19 @@
 
 Ask a rules question about a women's sport and get a plain-language answer taken only from the official rulebook, with the rule cited and a link to the exact page of the official PDF.
 
-Currently covers NCAA volleyball, pro volleyball (USA Volleyball rules), NCAA basketball and the WNBA.
+Currently covers 10 league pages across 5 sports:
 
-**Stack:** SvelteKit 3 on Vercel · Turso (libSQL with vector search) · Gemini embeddings and answers · Upstash Redis · Tailwind + shadcn-svelte
+| Sport | Leagues |
+|---|---|
+| Volleyball | NCAA, Pro (USA Volleyball rules) |
+| Basketball | NCAA, WNBA |
+| Soccer | NCAA, NWSL (IFAB Laws + NWSL competition rules) |
+| Rugby | All leagues (World Rugby Laws, for college, USA Rugby and WER) |
+| Hockey | NCAA, PWHL, USA Hockey |
 
-More detail: [`project_mgmt/`](project_mgmt/) — PRD, technical spec, design spec, build plan.
+**Stack:** SvelteKit 3 on Vercel · Turso (libSQL with vector search) · Gemini embeddings and answers · Redis · Tailwind + shadcn-svelte
+
+More detail: [`project_mgmt/`](project_mgmt/): PRD, technical spec, design spec, build plan, security plan, [evaluations](project_mgmt/EVALS.md), and [adding a sport or league](project_mgmt/ADDING_A_SPORT.md).
 
 ## Setup
 
@@ -23,7 +31,7 @@ npm run dev
 | `GEMINI_API_KEY` | Everything (from https://aistudio.google.com/apikey) |
 | `TURSO_DATABASE_URL` | Everything (`file:local.db` locally, `libsql://…` for Turso Cloud) |
 | `TURSO_AUTH_TOKEN` | Turso Cloud |
-| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Question log and daily limits (required in production) |
+| `REDIS_URL` (or `KV_REST_API_URL` + `KV_REST_API_TOKEN` for Upstash) | Question log and daily limits (required in production) |
 | `RATE_LIMIT_SECRET` | Daily limits (required in production; `openssl rand -hex 32`) |
 
 The daily question limits are off in local development.
@@ -36,7 +44,11 @@ Rulebook PDFs are copyrighted, so they live in `data/`, which is gitignored and 
 2. Look at its text: `npx tsx scripts/dump-pdf.ts data/<sport>/<file>.pdf > dump.txt`
 3. Add an entry to `src/lib/ingest/sources.ts` (and a parser in `src/lib/ingest/` if the layout is new)
 4. Check the parse: `npm run ingest -- <source-id> --dry-run`
-5. Embed and store: `npm run ingest -- <source-id>`
+5. If you changed a parser, check the other sources still parse the same: `npm run snapshot -- compare`
+6. Embed and store: `npm run ingest -- <source-id>`
+7. Add eval questions for the page and run `npm run eval`
+
+The full guide, including display settings and colors, is [`project_mgmt/ADDING_A_SPORT.md`](project_mgmt/ADDING_A_SPORT.md).
 
 ## Scripts
 
@@ -44,8 +56,11 @@ Rulebook PDFs are copyrighted, so they live in `data/`, which is gitignored and 
 |---|---|
 | `npm run dev` | Local dev server |
 | `npm run check` | Type check |
+| `npm test` | Unit tests |
 | `npm run ingest -- <id> [--dry-run]` | Parse, embed and store a rulebook |
+| `npm run snapshot -- save\|compare [id...]` | Parser regression check (no API keys needed) |
 | `npm run ask -- <sport> <league> "<question>"` | Ask from the terminal; shows retrieved rules and distances |
+| `npm run eval [-- --page <sport/league>]` | Run the labeled eval questions; see [`EVALS.md`](project_mgmt/EVALS.md) |
 | `npm run logs [-- 50]` | Recent questions from the Redis log |
 | `npm run db:check` | Check the Turso connection and vector support |
 

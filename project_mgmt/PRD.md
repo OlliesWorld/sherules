@@ -25,8 +25,8 @@ People need a fast, plain-language answer they can trust, with the actual rule n
 Ask a rules question about a women's sport and get a short, plain answer taken only from that league's official rulebook, with the rule cited and a link to the exact page of the official PDF.
 
 **The user's flow:**
-1. Pick a sport (Volleyball, Basketball)
-2. Pick a league (NCAA, Pro, WNBA)
+1. Pick a sport (Volleyball, Basketball, Soccer, Rugby, Hockey)
+2. Pick a league (e.g. NCAA, WNBA, NWSL, PWHL), or go straight to the page for a sport with one page (Rugby)
 3. Ask a question in their own words, or tap an example
 4. Read a short answer, with each cited rule shown as a card linking to the official PDF page
 5. If the rulebook doesn't cover it, get "I can't find that in the rulebook" instead of a guess
@@ -60,7 +60,7 @@ Ask a rules question about a women's sport and get a short, plain answer taken o
 - An answer with no valid citation becomes "I can't find that in the rulebook"
 - Division differences (NCAA Division I vs Divisions II and III) are called out when the excerpt has them
 
-**Coverage at launch**
+**Coverage**
 
 | Sport | League | Source | Season | Chunks |
 |---|---|---|---|---|
@@ -68,22 +68,33 @@ Ask a rules question about a women's sport and get a short, plain answer taken o
 | Volleyball | Pro | USA Volleyball Indoor Rules + Casebook of Approved Rulings | 2025-27 | 611 |
 | Basketball | NCAA | NCAA Women's Basketball Rules Book | 2026-27 | 612 |
 | Basketball | WNBA | Official Rules of the WNBA (rules + Comments on the Rules) | 2026 | 141 |
+| Soccer | NCAA | NCAA Men's and Women's Soccer Rules Book | 2026-27 | 320 |
+| Soccer | NWSL | IFAB Laws of the Game 2026/27 + NWSL 2026 Competition Rules & Regulations | 2026 | 103 + 33 |
+| Rugby | All leagues | World Rugby Laws of the Game 2026 (incl. sevens variations) | 2026 | 223 |
+| Hockey | NCAA | NCAA Men's and Women's Ice Hockey Rules + women's interpretations and experimental rule | 2026-27 | 312 + 4 + 1 |
+| Hockey | PWHL | PWHL Official Rule Book | 2025-26 | 525 |
+| Hockey | USA Hockey | USA Hockey Official Rules and Casebook | 2025-29 | 780 |
 
-The Pro volleyball page uses USA Volleyball's rules because neither LOVB nor MLV publishes a rulebook; the page says so and notes that the leagues may use their own variations.
+Pages that answer from another body's rules say so in the banner, with a note:
+- **Pro volleyball** uses USA Volleyball's rules, because neither LOVB nor MLV publishes a rulebook; the leagues may use their own variations.
+- **NWSL** plays under the IFAB Laws of the Game; league rules (substitutions, suspensions, standings) come from the NWSL's own competition rules.
+- **Rugby** has one page covering college, USA Rugby and Women's Elite Rugby, which all play World Rugby's laws, until those leagues publish their own rulebooks.
+
+NCAA soccer and NCAA ice hockey books cover men and women; answers give the women's rule where they differ.
 
 **Site**
 - Home lists only sports that have data; each sport lists only leagues that have data
 - League page: banner naming the rulebook and season, question box, example questions, answer with rule cards
 - Light and dark themes (follows the device setting, with a toggle)
-- Per-sport accent color (teal volleyball, orange basketball), checked for WCAG AA contrast in both themes
+- Per-sport accent color (teal volleyball, orange basketball, navy soccer, red rugby, purple hockey), checked for WCAG AA contrast in both themes
 
 **Guardrails**
 - 5 free questions per visitor per day, and a site-wide cap of 500 questions per day
 - Questions logged (no IP or visitor details) to find gaps and build evaluations
 
 ### 4.2 Next (post-launch)
-- **Evaluations:** a labeled question set run with promptfoo, checking that the right rule is retrieved and the answer is correct
-- **More sources:** NCAA basketball Case Book, NCAA volleyball rules-changes documents and Challenge Review System manual, NWSL and other leagues
+- **Evaluations:** ✅ built (`npm run eval`, see [EVALS.md](EVALS.md)). Next: grow the question set from the question log, and add prompt-injection attempts
+- **More sources and sports:** NCAA basketball Case Book, NCAA volleyball rules-changes documents and Challenge Review System manual; softball, lacrosse, field hockey (see the Sport Expansion Plan in the build plan)
 - **Shorter quotes:** show the exact sentence the answer relies on instead of the whole rule (also reduces how much rulebook text is shown)
 - **Follow-up questions** in context of the first answer
 
@@ -125,11 +136,12 @@ Rule card → opens the official PDF at the cited page (#page=N)
 
 ## 6. Success Metrics
 
-| Metric | Target | How measured |
-|---|---|---|
-| Retrieval accuracy | Right rule in the top 5 for >90% of eval questions | promptfoo eval set |
-| Answer accuracy | >90% correct on eval questions | promptfoo eval set (graded) |
-| False "can't find" | <10% of answerable questions | Question log (`not_found` results) + eval set |
+| Metric | Target | How measured | Latest (Oct 22, 2026, 62 questions) |
+|---|---|---|---|
+| Retrieval accuracy | Right rule in the top 5 for >90% of eval questions | `npm run eval` | 98% (49/50) |
+| Answer accuracy | >90% correct on eval questions | `npm run eval` (required facts in the answer) | 98% (49/50) |
+| False "can't find" | <10% of answerable questions | Question log (`not_found` results) + eval set | 0% after the citation fix (was 30% on the first run) |
+| Declines what the rulebook doesn't cover | 100% of stats, trivia, off-topic and trick questions | `npm run eval` | 100% (12/12) |
 | Made-up citations shown | 0 | Enforced in code (citation check) |
 | Answer time | <5 s median | Question log `ms` |
 | Repeat usage | Visitors returning within 7 days | Analytics (to add) |
@@ -178,9 +190,11 @@ Running costs are almost entirely Gemini usage (2 calls per question). Database 
 | Design | ✅ Done | Design from the Lovable export, light/dark themes, sport accents |
 | More leagues | ✅ Done | NCAA basketball, Pro volleyball (USAV), WNBA |
 | Guardrails | ✅ Done | Daily limit, question log |
-| **Launch hardening** | ⏳ Next | SECURITY_PLAN items, cleanup, README, privacy note |
-| Evaluations | Planned | promptfoo eval set for retrieval + answer accuracy |
-| More sources | Planned | Case books, rules-changes docs, other leagues |
+| Launch hardening | ✅ Mostly done | SECURITY_PLAN items, cleanup, README, privacy note. Left to confirm: Gemini key restricted to the Generative Language API, LiveKit usage limit |
+| Voice | ✅ Done | Ask by voice (LiveKit) on NCAA volleyball |
+| More sports | ✅ Done | Soccer (NCAA, NWSL), rugby (all leagues), hockey (NCAA, PWHL, USA Hockey) |
+| Evaluations | ✅ First version | 62-question eval; found and fixed dropped citations; 61/62 passing |
+| More sources | Planned | Case books, rules-changes docs, softball, lacrosse, field hockey |
 
 ---
 
