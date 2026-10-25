@@ -86,7 +86,7 @@ Production site passes the launch checklist in SECURITY_PLAN §5.
 
 ### Delivered
 - `npm run eval`: 62 labeled questions across all 10 pages, run through `askRulebook()`, graded on retrieval, citation, answer facts and declines. A small script instead of promptfoo, so no new dependency
-- First run found that correct answers citing a sub-rule ("Rule 11.3.1" from chunk "Rule 11.3") were being replaced with "can't find that". Fixed in `citations.ts`; second run 61/62
+- First run found that correct answers citing a sub-rule ("Rule 11.3.1" from chunk "Rule 11.3") were being replaced with "can't find that". Fixed in `citations.ts`; second run 61/62. Third run, with 6 prompt-injection questions added: 67/68
 - Write-up and how-to: [EVALS.md](EVALS.md)
 
 ### Still to do

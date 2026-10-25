@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { leagueLevel, leagueName, sportName } from '#lib/labels.ts';
+	import { leagueLevel, leagueName, sportName, tileRulebook } from '#lib/labels.ts';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -25,7 +25,7 @@
 				<span>
 					<span class="block text-lg font-bold">{leagueName(league)}</span>
 					<span class="text-sm text-muted-foreground">
-						{[leagueLevel(league), `${season} rulebook`].filter(Boolean).join(' · ')}
+						{[leagueLevel(league), tileRulebook(data.sport, league, season)].filter(Boolean).join(' · ')}
 					</span>
 				</span>
 				<span class="text-sport" aria-hidden="true">→</span>

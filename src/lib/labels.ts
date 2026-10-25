@@ -103,6 +103,11 @@ export function rulebookLabel(sport: string, league: string, seasons: string): s
 	return borrowed ? `the ${borrowed.rulebook}` : `the ${seasons} ${leagueName(league)} rulebook`;
 }
 
+/** For a league tile: "2026-27 rulebook", or the borrowed rulebook's name so the tile says whose rules these are. */
+export function tileRulebook(sport: string, league: string, season: string): string {
+	return BORROWED_RULEBOOKS[`${sport}/${league}`]?.rulebook ?? `${season} rulebook`;
+}
+
 /** A caveat shown under the banner, if this league has one. */
 export function rulebookNote(sport: string, league: string): string | undefined {
 	return BORROWED_RULEBOOKS[`${sport}/${league}`]?.note;

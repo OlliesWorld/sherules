@@ -136,12 +136,14 @@ Rule card → opens the official PDF at the cited page (#page=N)
 
 ## 6. Success Metrics
 
-| Metric | Target | How measured | Latest (Oct 22, 2026, 62 questions) |
+| Metric | Target | How measured | Latest (Oct 25, 2026, our 68-question test set) |
 |---|---|---|---|
-| Retrieval accuracy | Right rule in the top 5 for >90% of eval questions | `npm run eval` | 98% (49/50) |
-| Answer accuracy | >90% correct on eval questions | `npm run eval` (required facts in the answer) | 98% (49/50) |
-| False "can't find" | <10% of answerable questions | Question log (`not_found` results) + eval set | 0% after the citation fix (was 30% on the first run) |
-| Declines what the rulebook doesn't cover | 100% of stats, trivia, off-topic and trick questions | `npm run eval` | 100% (12/12) |
+| Retrieval accuracy | Right rule in the top 5 for >90% of eval questions | `npm run eval` | 50/51 |
+| Answer accuracy | >90% correct on eval questions | `npm run eval` (required facts in the answer) | 50/51 |
+| False "can't find" | <10% of answerable questions | Question log (`not_found` results) + eval set | 0/51 since the citation fix (15/50 on the first run) |
+| Declines what the rulebook doesn't cover | All stats, trivia, off-topic, trick and injection questions | `npm run eval` | 17/17, including 6/6 injection attempts |
+
+The test set is small (about 6 questions per page) and written by us, so these are checks, not accuracy rates for the site. Real visitor questions from the log will be added over time.
 | Made-up citations shown | 0 | Enforced in code (citation check) |
 | Answer time | <5 s median | Question log `ms` |
 | Repeat usage | Visitors returning within 7 days | Analytics (to add) |
@@ -190,10 +192,10 @@ Running costs are almost entirely Gemini usage (2 calls per question). Database 
 | Design | ✅ Done | Design from the Lovable export, light/dark themes, sport accents |
 | More leagues | ✅ Done | NCAA basketball, Pro volleyball (USAV), WNBA |
 | Guardrails | ✅ Done | Daily limit, question log |
-| Launch hardening | ✅ Mostly done | SECURITY_PLAN items, cleanup, README, privacy note. Left to confirm: Gemini key restricted to the Generative Language API, LiveKit usage limit |
+| Launch hardening | ✅ Done | SECURITY_PLAN items, cleanup, README, privacy note, Gemini key restriction, LiveKit usage limit, voice agent injection guard |
 | Voice | ✅ Done | Ask by voice (LiveKit) on NCAA volleyball |
 | More sports | ✅ Done | Soccer (NCAA, NWSL), rugby (all leagues), hockey (NCAA, PWHL, USA Hockey) |
-| Evaluations | ✅ First version | 62-question eval; found and fixed dropped citations; 61/62 passing |
+| Evaluations | ✅ First version | 68-question eval incl. prompt injection; found and fixed dropped citations; 67/68 passing |
 | More sources | Planned | Case books, rules-changes docs, softball, lacrosse, field hockey |
 
 ---

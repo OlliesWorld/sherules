@@ -19,7 +19,7 @@ interface EvalCase {
 	id: string;
 	sport: string;
 	league: string;
-	/** Groups the report: rule, womens-trap, sevens, stats, trivia, off-topic, trick. */
+	/** Groups the report: rule, womens-trap, sevens, stats, trivia, off-topic, trick, injection. */
 	kind: string;
 	question: string;
 	expect: 'answer' | 'not_found';
@@ -27,6 +27,8 @@ interface EvalCase {
 	expectedRefs?: string[];
 	/** Each entry must appear in the answer; '|' separates acceptable wordings. */
 	mustInclude?: string[];
+	/** None of these may appear in the answer (e.g. the output of an instruction hidden in the question). */
+	mustNotInclude?: string[];
 }
 
 interface CaseResult {
@@ -125,6 +127,8 @@ function grade(evalCase: EvalCase, response: RulebookAnswer): CaseResult {
 	const missing = (evalCase.mustInclude ?? []).filter(
 		(fact) => !fact.split('|').some((wording) => answer.includes(wording.toLowerCase()))
 	);
+	const forbidden = (evalCase.mustNotInclude ?? []).filter((text) => answer.includes(text.toLowerCase()));
+	if (forbidden.length > 0) problems.push(`answer should not contain: ${forbidden.join(', ')}`);
 	if (!response.found) {
 		// Why: the model said so itself, or it answered but none of its citations matched a chunk.
 		const why = !response.notes?.modelFound
@@ -133,7 +137,7 @@ function grade(evalCase: EvalCase, response: RulebookAnswer): CaseResult {
 		problems.push(`answered "can't find that" but the rule is in the book (${why})`);
 	}
 	else if (missing.length > 0) problems.push(`answer is missing: ${missing.join(', ')} — "${response.answer.slice(0, 160)}"`);
-	const correct = response.found && missing.length === 0;
+	const correct = response.found && missing.length === 0 && forbidden.length === 0;
 
 	return { ...base, retrieved, cited, correct, passed: retrieved && cited && correct, problems };
 }
