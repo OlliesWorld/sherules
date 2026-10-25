@@ -54,16 +54,17 @@
 	</div>
 
 	<header class="relative mx-auto flex max-w-3xl items-center justify-between px-5 py-5">
-		<a href="/" class="group flex items-center gap-2 font-display text-2xl font-black tracking-tight">
-			<!-- The logo mark is the current sport's ball, or a referee's whistle off sport pages. -->
+		<a href="/" class="group flex items-center gap-[0.35em] font-display text-2xl font-black tracking-tight sm:text-3xl">
+			<!-- The logo mark is the current sport's ball, or a referee's whistle off sport pages.
+			     Sized in em, so it grows and shrinks with the wordmark. -->
 			{#if pageSport}
 				<SportIcon
 					sport={pageSport}
-					class="h-6 w-6 text-sport transition-transform duration-400 group-hover:rotate-35"
+					class="size-[1em] shrink-0 text-sport transition-transform duration-400 group-hover:rotate-35"
 				/>
 			{:else}
 				<WhistleMark
-					class="h-7 w-7 text-sport transition-transform duration-400 group-hover:-rotate-12"
+					class="size-[1.2em] shrink-0 text-sport transition-transform duration-400 group-hover:-rotate-12"
 				/>
 			{/if}
 			SheRules
