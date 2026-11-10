@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { tick, untrack } from 'svelte';
 	import { enhance, type SubmitFunction } from '$app/forms';
+	import LeaguePicker from '#lib/components/LeaguePicker.svelte';
 	import RuleCard from '#lib/components/RuleCard.svelte';
 	import SportIcon from '#lib/components/SportIcon.svelte';
 	import VoiceAgent from '#lib/components/VoiceAgent.svelte';
 	import { Button } from '#lib/components/ui/button/index.ts';
 	import { Input } from '#lib/components/ui/input/index.ts';
+	import { rememberLeague } from '#lib/last-league.ts';
 	import { exampleQuestions, pageHeading, rulebookLabel, rulebookNote } from '#lib/labels.ts';
 	import type { PageProps } from './$types';
 
@@ -27,6 +29,8 @@
 	let note = $derived(rulebookNote(data.sport, data.league));
 	// asksLeft is null when there's no daily limit (local development).
 	let outOfAsks = $derived(data.asksLeft === 0);
+
+	$effect(() => rememberLeague(data.sport, data.league));
 
 	// use:enhance submits the form with fetch instead of a full page load.
 	// Returning a callback lets us run code when the response arrives.
@@ -97,12 +101,14 @@
 	{/if}
 </div>
 
+<LeaguePicker sport={data.sport} leagues={data.leagues} current={data.league} />
+
 <form
 	bind:this={formElement}
 	method="POST"
 	action="?/ask"
 	use:enhance={handleAsk}
-	class="mt-6 flex gap-2"
+	class="flex gap-2 {data.leagues.length > 1 ? 'mt-3' : 'mt-6'}"
 >
 	<label for="question" class="sr-only">Ask a rules question</label>
 	<Input
@@ -196,7 +202,7 @@
 			<p class="mt-4 text-xs leading-relaxed text-muted-foreground">
 				Rule text quoted from the {[...new Set(result.citations.map((c) => c.sourceName))].join(' and the ')}
 				for reference only. SheRules is not affiliated with or endorsed by its publisher. The official rulebook
-				is the final word, so use "Open source" to read the full rule.
+				is the final word, so follow the link on each rule to read it in full.
 			</p>
 
 			<!-- For checking retrieval while we tune it. The server only sends excerpts in local

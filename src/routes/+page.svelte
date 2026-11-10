@@ -9,7 +9,7 @@
 <section class="pt-10 pb-12 sm:pt-14">
 	<div class="motion-stagger">
 		<p
-			class="mb-4 inline-block rounded-full bg-sport-soft px-3 py-1 text-xs font-bold tracking-widest text-sport uppercase"
+			class="mb-4 inline-block rounded-full bg-sport-soft px-3 py-1 text-xs font-bold tracking-widest text-[oklch(42%_var(--sport-c)_var(--sport-h))] uppercase dark:text-sport"
 		>
 			Women's sports, decoded
 		</p>

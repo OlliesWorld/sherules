@@ -19,16 +19,6 @@ const LEAGUE_NAMES: Record<string, string> = {
 	'usa-hockey': 'USA Hockey'
 };
 
-const LEAGUE_LEVELS: Record<string, string> = {
-	ncaa: 'College',
-	pro: 'Professional',
-	wnba: 'Professional',
-	nwsl: 'Professional',
-	all: 'College and pro',
-	pwhl: 'Professional',
-	'usa-hockey': 'Amateur and youth'
-};
-
 // Leagues answered from another organization's rulebook name it in the page banner,
 // with a note on what that means. Keyed by "sport/league".
 const BORROWED_RULEBOOKS: Record<string, { rulebook: string; note: string }> = {
@@ -93,19 +83,10 @@ export function pageHeading(sport: string, league: string): string {
 	return league === 'all' ? sportName(sport) : `${leagueName(league)} ${sportName(sport)}`;
 }
 
-export function leagueLevel(slug: string): string | undefined {
-	return LEAGUE_LEVELS[slug];
-}
-
 /** For the banner: "the 2026-27 NCAA rulebook", or the borrowed rulebook's name. */
 export function rulebookLabel(sport: string, league: string, seasons: string): string {
 	const borrowed = BORROWED_RULEBOOKS[`${sport}/${league}`];
 	return borrowed ? `the ${borrowed.rulebook}` : `the ${seasons} ${leagueName(league)} rulebook`;
-}
-
-/** For a league tile: "2026-27 rulebook", or the borrowed rulebook's name so the tile says whose rules these are. */
-export function tileRulebook(sport: string, league: string, season: string): string {
-	return BORROWED_RULEBOOKS[`${sport}/${league}`]?.rulebook ?? `${season} rulebook`;
 }
 
 /** A caveat shown under the banner, if this league has one. */
