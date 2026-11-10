@@ -13,17 +13,20 @@
      replacestate: Back leaves the sport instead of stepping through each league tapped. -->
 {#if leagues.length > 1}
 	<nav aria-label="League" class="mt-5">
-		<ul class="flex flex-wrap gap-2">
+		<!-- Each league is underlined; the picked one gets a thicker line in the sport's color. -->
+		<ul class="flex flex-wrap gap-x-5 gap-y-1">
 			{#each leagues as { league } (league)}
 				<li>
 					<a
 						href="/{sport}/{league}"
 						data-sveltekit-replacestate
 						aria-current={league === current ? 'page' : undefined}
-						class="motion-choice inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sport {league ===
+						class="inline-flex min-h-10 items-center px-1 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sport {league ===
 						current
-							? 'border-sport bg-sport text-sport-foreground'
-							: 'bg-card hover:bg-sport-soft'}"
+							? 'border-b-[3px] border-sport text-sport'
+							: current
+								? 'border-b-[3px] border-border text-muted-foreground hover:border-sport/50 hover:text-foreground'
+								: 'border-b-[3px] border-sport/40 text-foreground hover:border-sport'}"
 					>
 						{leagueName(league)}
 					</a>
