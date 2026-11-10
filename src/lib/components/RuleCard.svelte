@@ -14,7 +14,6 @@
 	href={citation.url}
 	target="_blank"
 	rel="noopener"
-	aria-label="Open {citation.ruleRef} in the {citation.sourceName}, page {citation.page}"
 	class="rule-card motion-rule group block rounded-xl border border-transparent p-5"
 >
 	<p class="font-mono font-bold text-sport {isNumber ? 'text-4xl' : 'text-2xl'}">{shortRef}</p>
@@ -25,10 +24,10 @@
 		class="mt-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-border/60 pt-3 text-sm"
 	>
 		<span class="calm-link font-medium text-muted-foreground group-hover:text-foreground">
-			{citation.sourceName}, p. {citation.page}
+			{citation.sourceName}
 		</span>
 		<span class="inline-flex items-center gap-1.5 font-bold text-sport">
-			Open source
+			Read page {citation.page}
 			<svg
 				viewBox="0 0 16 16"
 				class="h-4 w-4 transition-transform group-hover:translate-x-1"

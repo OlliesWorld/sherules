@@ -4,7 +4,7 @@
 	import HeroDecor from '#lib/components/HeroDecor.svelte';
 	import SportIcon from '#lib/components/SportIcon.svelte';
 	import ThemeToggle from '#lib/components/ThemeToggle.svelte';
-	import { leagueName, sportName } from '#lib/labels.ts';
+	import { sportName } from '#lib/labels.ts';
 	import { page } from '$app/state';
 	import { ModeWatcher } from 'mode-watcher';
 	import WhistleMark from '#lib/components/WhistleMark.svelte';
@@ -21,17 +21,13 @@
 	// Pages without a sport use volleyball's teal as the brand color.
 	let sport = $derived(pageSport ?? 'volleyball');
 
-	// Home › Volleyball › NCAA, built from the URL. None on the home page or error pages.
-	// $derived.by takes a function, for derived values that need more than one expression.
-	let crumbs = $derived.by((): Crumb[] => {
-		const { sport, league } = page.params;
-		if (!sport || page.error) return [];
-
-		const items: Crumb[] = [{ label: 'Home', href: '/' }];
-		items.push({ label: sportName(sport), href: league ? `/${sport}` : undefined });
-		if (league) items.push({ label: leagueName(league) });
-		return items;
-	});
+	// Home › Volleyball, built from the URL. None on the home page or error pages.
+	// The league isn't a crumb: the league picker on the page shows it and switches it.
+	let crumbs = $derived<Crumb[]>(
+		page.params.sport && !page.error
+			? [{ label: 'Home', href: '/' }, { label: sportName(page.params.sport) }]
+			: []
+	);
 </script>
 
 <svelte:head>

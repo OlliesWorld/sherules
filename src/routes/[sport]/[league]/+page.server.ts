@@ -1,6 +1,6 @@
 import { error, fail } from '@sveltejs/kit';
 import { dev } from '$app/env';
-import { listLeagueSources } from '#lib/server/catalog.ts';
+import { listLeagues, listLeagueSources } from '#lib/server/catalog.ts';
 import { db, limiter, limiterMissing, ragDeps, voiceConfig } from '#lib/server/clients.ts';
 import { logQuestion } from '#lib/server/log.ts';
 import { askRulebook } from '#lib/server/rag.ts';
@@ -14,7 +14,10 @@ const MAX_QUESTION_LENGTH = 500;
 const LIMIT_ENABLED = !dev;
 
 export const load: PageServerLoad = async ({ params, getClientAddress }) => {
-	const sources = await listLeagueSources(db, params.sport, params.league);
+	const [sources, leagues] = await Promise.all([
+		listLeagueSources(db, params.sport, params.league),
+		listLeagues(db, params.sport)
+	]);
 	if (sources.length === 0) error(404, 'No rulebooks for this league yet');
 
 	// null = no count shown (local development, limits not configured, or Redis unreachable)
@@ -30,6 +33,7 @@ export const load: PageServerLoad = async ({ params, getClientAddress }) => {
 	return {
 		sport: params.sport,
 		league: params.league,
+		leagues,
 		sources,
 		asksPerDay: ASKS_PER_DAY,
 		asksLeft: left,
