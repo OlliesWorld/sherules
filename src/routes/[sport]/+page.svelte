@@ -28,7 +28,7 @@
 		{sportName(data.sport)}
 	</h1>
 	<p class="mt-1 text-sm font-medium text-muted-foreground">
-		Pick a league to get answers from its rulebook
+		Tap a league to start
 	</p>
 </div>
 
