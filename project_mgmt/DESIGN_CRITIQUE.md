@@ -2,7 +2,7 @@
 
 **Date:** November 9–10, 2026
 **Reviewed:** the homepage (`/`) and the NCAA volleyball question page (`/volleyball/ncaa`), showing a real question and answer from the live site
-**Status:** round 1 changes merged to `main`. Round 2 (league tabs) is on the `league-picker-style` branch
+**Status:** round 1 and round 2 (league tabs) changes merged to `main`
 
 ## Summary
 
