@@ -2,7 +2,7 @@
 
 **Date:** November 9–10, 2026
 **Reviewed:** the homepage (`/`) and the NCAA volleyball question page (`/volleyball/ncaa`), showing a real question and answer from the live site
-**Status:** four changes built on the `add-impeccable-skill` branch, not yet merged or shipped
+**Status:** round 1 changes merged to `main`. Round 2 (league tabs) is on the `league-picker-style` branch
 
 ## Summary
 
@@ -67,8 +67,41 @@ The review was useful, and it also needed a human editor. Not every suggestion f
 
 - Darkened the "Women's sports, decoded" text in light mode so it meets WCAG AA.
 
+## Round 2: League tabs
+
+**Date:** November 10, 2026
+
+### Getting to the design
+
+I didn't like how the first league buttons looked, because they were too rounded. The design went through a few versions:
+
+1. **Rounded pill buttons** (round 1). Too bubbly.
+2. **Squarer separate buttons.** This was my own quick edit.
+3. **One connected bar**, with the leagues joined in a single outlined control. This was the AI's suggestion. It read as one large button, which isn't what I had in mind.
+4. **Underlined text tabs.** This was my idea, and the one I kept. Each league is text with its own bottom line, and the picked league turns the sport's color.
+
+I then worried a fan wouldn't realize the tabs were tappable before picking a league. Two changes addressed that:
+- Before a pick, the tabs show dark text with a sport-colored underline instead of gray.
+- The prompt changed to "Tap a league to start".
+
+### Second critique
+
+I reran the same two-reviewer critique on the sport page and league tabs, at phone and desktop widths, in light and dark. This time the reviewers were told about my round 1 decisions so they wouldn't raise them again.
+
+- **Score:** 31/40 ("Good"), up from 26/40 for the pages in round 1. The flows aren't identical, so this isn't a strict comparison.
+- **Automated detector:** no findings, in the source or on the rendered pages.
+- **My worry:** the review's answer was "mostly yes". Most fans should find the tabs within a second or two. Some may tap the disabled question box first.
+
+| Finding | Status |
+|---|---|
+| On the sport page, the disabled Ask button is still the sport color, so the dead question box looks like the thing to tap | Open |
+| Before a pick, the light underline is 1.9:1 contrast, below the 3:1 guideline for controls. Full sport color would pass | Open |
+| "Tap a league to start" is styled like a subtitle, so it may be skimmed past | Open |
+| Returning visitors may briefly see the sport page before going to their last league (inferred from the code, not tested) | Open |
+| The keyboard focus outline on the sport page isn't the sport color, but it's visible | Open |
+
 ## Limits
 
-- The league buttons pass the type check, but I haven't yet confirmed them in a browser.
+- The league tabs were checked in a local browser with test data, not yet on the live site.
 - The review covered one question on one league page. Other leagues and the "can't find it" state weren't reviewed visually.
 - Scores come from an AI reviewer's judgment, not from user testing.
