@@ -33,8 +33,10 @@ for (const citation of result.citations) {
 	console.log(`   cited: ${citation.ruleRef}  ${citation.url}`);
 }
 
-// Retrieval view: what came back and how close it was. Lower distance = closer match.
-console.log('\nRetrieved (closest first):');
+// Retrieval view: how the question was searched, what came back and how close it was. Lower distance = closer match.
+console.log(`\nRewritten: ${result.retrieval.rewrittenQuery ?? '(none)'}`);
+if (result.retrieval.glossaryTerms.length > 0) console.log(`Glossary:  ${result.retrieval.glossaryTerms.join('; ')}`);
+console.log('\nRetrieved (closest first, from either search):');
 for (const excerpt of result.excerpts) {
 	const cited = result.citations.some((c) => c.ruleRef === excerpt.ruleRef) ? 'cited' : '     ';
 	console.log(`  ${excerpt.distance.toFixed(3)}  ${cited}  ${excerpt.ruleRef.padEnd(24)} ${excerpt.headingPath.split(' > ').at(-1)}`);

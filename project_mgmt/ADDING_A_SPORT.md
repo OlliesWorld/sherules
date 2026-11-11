@@ -207,6 +207,8 @@ Add 5–7 questions for each new page to `evals/questions.json` (format in [EVAL
 - For a shared men's and women's book, a question where the rules differ, with a `mustInclude` that proves the answer gave the women's rule
 - For variants (rugby sevens, experimental rules), a question that needs the variant
 
+**Terms that trip people up.** If the new rulebook names something differently from another league in the same sport (WNBA "Reset" vs NCAA "30-second timeout", "TV timeout" vs "electronic-media timeout"), add an entry to `src/lib/server/glossary.ts` and a `"kind": "terminology"` eval question that uses the other league's word. Every term and ref in an entry must come from the rulebook text; `npm test` checks them against `data/snapshots`. After launch, `npm run logs -- 200 --misses` is the best source of new entries.
+
 The answer prompt (`src/lib/server/answer.ts`) already tells the model that answers are for women's games and how to handle sevens excerpts. A new kind of variant may need its own line there. If you add one, re-run the full eval, since the prompt is shared by every page.
 
 ## 10. Checks

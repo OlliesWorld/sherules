@@ -172,9 +172,11 @@ Each input is sent as its own `Content` object: a plain array of strings is merg
 |---|---|---|
 | Validate | `routes/[sport]/[league]/+page.server.ts` | 3–500 characters; validation failures don't count toward the limit |
 | Daily limits | `rate-limit.ts` | 5 per visitor and 500 site-wide per UTC day (Redis counters, HMAC visitor ids); if Redis or `RATE_LIMIT_SECRET` is missing in production, questions are refused; disabled when `dev` |
-| Embed question | `embed.ts` | `task: search result | query: <question>` |
-| Retrieve | `search.ts` | Top 5 by `vector_distance_cos`, filtered by sport, league, embedding model |
-| Answer | `answer.ts` | System prompt: excerpts only, cite refs in brackets, say "I can't find that in the rulebook", call out division differences. JSON `{found, answer, citations}` |
+| Glossary | `glossary.ts` | Verified term pairs ("reset timeout" → NCAA "30-second timeout"). A match adds the rulebook's terms to the search and a naming note to the answer prompt |
+| Rewrite | `rewrite.ts` | Flash-lite restates the question in this league's rulebook language (search only, never answered from); runs in parallel with the original search; failure falls back to the original |
+| Embed question | `embed.ts` | `task: search result | query: <question>`, once for the question as asked and once for the rewrite + glossary terms |
+| Retrieve | `search.ts` | Top 5 by `vector_distance_cos` per query, filtered by sport, league, embedding model; `mergeResults` keeps each chunk's closest distance and the top 5 overall |
+| Answer | `answer.ts` | Glossary notes are passed as "terminology notes (not rule text)", never cited. System prompt: excerpts only, cite refs in brackets, say "I can't find that in the rulebook", call out division differences. JSON `{found, answer, citations}` |
 | Citation check | `answer.ts` | Normalize refs; keep only refs among retrieved chunks; no valid citation → not found |
 | Assemble | `rag.ts` | Citations get source name, `url#page=N`, and rule text |
 | Log | `log.ts` | Redis entry; never throws |
