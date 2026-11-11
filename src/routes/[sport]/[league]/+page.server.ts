@@ -99,6 +99,8 @@ export const actions = {
 					ruleRef: excerpt.ruleRef,
 					distance: Number(excerpt.distance.toFixed(3))
 				})),
+				rewrittenQuery: result.retrieval.rewrittenQuery,
+				glossaryTerms: result.retrieval.glossaryTerms.length > 0 ? result.retrieval.glossaryTerms : undefined,
 				ms: Date.now() - startedAt
 			});
 			// The excerpts panel (all retrieved rule text, with distances) and the notes are

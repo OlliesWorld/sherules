@@ -16,6 +16,10 @@ export interface QuestionLogEntry {
 	citations?: string[];
 	/** Rule refs search returned, closest first, with distance. For checking retrieval. */
 	retrieved?: { ruleRef: string; distance: number }[];
+	/** The question restated in rulebook language for the second search (null if the rewrite failed). */
+	rewrittenQuery?: string | null;
+	/** Rulebook terms added from the glossary (glossary.ts), if any entry matched. */
+	glossaryTerms?: string[];
 	/** Time from receiving the question to having an answer. */
 	ms?: number;
 }

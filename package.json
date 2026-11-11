@@ -16,7 +16,7 @@
 		"ask": "tsx --env-file-if-exists=.env scripts/ask.ts",
 		"eval": "tsx --env-file-if-exists=.env scripts/eval.ts",
 		"logs": "tsx --env-file-if-exists=.env scripts/logs.ts",
-		"test": "tsx --test src/lib/server/agent-search.test.ts src/lib/server/voice.test.ts src/lib/server/citations.test.ts"
+		"test": "tsx --test src/lib/server/agent-search.test.ts src/lib/server/voice.test.ts src/lib/server/citations.test.ts src/lib/server/glossary.test.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-vercel": "^7.0.0",

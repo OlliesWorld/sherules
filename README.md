@@ -61,7 +61,7 @@ The full guide, including display settings and colors, is [`project_mgmt/ADDING_
 | `npm run snapshot -- save\|compare [id...]` | Parser regression check (no API keys needed) |
 | `npm run ask -- <sport> <league> "<question>"` | Ask from the terminal; shows retrieved rules and distances |
 | `npm run eval [-- --page <sport/league>]` | Run the labeled eval questions; see [`EVALS.md`](project_mgmt/EVALS.md) |
-| `npm run logs [-- 50]` | Recent questions from the Redis log |
+| `npm run logs [-- 50] [--misses]` | Recent questions from the Redis log; `--misses` shows only "not found" answers, with the rewrite and closest rules |
 | `npm run db:check` | Check the Turso connection and vector support |
 
 ## Deploying

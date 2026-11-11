@@ -1,6 +1,9 @@
 // Prints the most recent logged questions from Redis.
-// Usage: npm run logs          (newest 20)
-//        npm run logs -- 100   (newest 100)
+// Usage: npm run logs                     (newest 20)
+//        npm run logs -- 100              (newest 100)
+//        npm run logs -- 200 --misses     ("not found" answers among the newest 200)
+// The misses are the best source of new glossary entries (src/lib/server/glossary.ts):
+// they show the words people actually use that the rulebook doesn't.
 // Needs REDIS_URL (standard Redis), or KV_REST_API_URL + KV_REST_API_TOKEN (Upstash).
 // On Vercel: Project → Settings → Environment Variables (copy the value into your terminal or .env).
 import { Redis as UpstashRedis } from '@upstash/redis';
@@ -9,7 +12,9 @@ import { createClient } from 'redis';
 // Same key as src/lib/server/log.ts (that file can only be imported inside SvelteKit).
 const LOG_KEY = 'sherules:logs';
 
-const count = Number(process.argv[2] ?? 20);
+const args = process.argv.slice(2);
+const missesOnly = args.includes('--misses');
+const count = Number(args.find((arg) => /^\d+$/.test(arg)) ?? 20);
 
 /** Reads the newest entries, from whichever kind of Redis is configured. */
 async function readEntries(): Promise<Record<string, unknown>[]> {
@@ -33,11 +38,23 @@ async function readEntries(): Promise<Record<string, unknown>[]> {
 	process.exit(1);
 }
 
-const entries = await readEntries();
+const all = await readEntries();
+const entries = missesOnly ? all.filter((entry) => entry.result === 'not_found') : all;
 
-console.log(`\n${entries.length} most recent questions (newest first):\n`);
+console.log(
+	missesOnly
+		? `\n${entries.length} "not found" answers among the ${all.length} most recent questions (newest first):\n`
+		: `\n${entries.length} most recent questions (newest first):\n`
+);
 for (const entry of entries) {
-	const cited = Array.isArray(entry.citations) && entry.citations.length > 0 ? `  cited: ${entry.citations.join(', ')}` : '';
 	console.log(`${entry.timestamp}  ${String(entry.result).padEnd(12)} ${entry.sport}/${entry.league}  ${entry.ms ?? '-'}ms`);
-	console.log(`  "${entry.question}"${cited ? `\n${cited}` : ''}\n`);
+	console.log(`  "${entry.question}"`);
+	if (Array.isArray(entry.citations) && entry.citations.length > 0) console.log(`  cited: ${entry.citations.join(', ')}`);
+	if (entry.rewrittenQuery) console.log(`  rewritten: "${entry.rewrittenQuery}"`);
+	if (Array.isArray(entry.glossaryTerms)) console.log(`  glossary: ${entry.glossaryTerms.join('; ')}`);
+	if (missesOnly && Array.isArray(entry.retrieved)) {
+		const top = (entry.retrieved as { ruleRef: string; distance: number }[]).slice(0, 3);
+		console.log(`  closest: ${top.map((r) => `${r.ruleRef} (${r.distance})`).join(', ') || 'nothing'}`);
+	}
+	console.log();
 }

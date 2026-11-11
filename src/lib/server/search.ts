@@ -43,7 +43,24 @@ export async function searchChunks(
 		args: [JSON.stringify(questionVector), sport, league, EMBEDDING_MODEL_TAG, limit]
 	});
 
-	return result.rows.map((row) => ({
+	return result.rows.map(toChunk);
+}
+
+/**
+ * Merges results from several searches of the same rulebook (the original question and its
+ * rewrites): each chunk keeps its closest distance, and the closest `limit` chunks are returned.
+ */
+export function mergeResults(resultSets: RetrievedChunk[][], limit = TOP_K): RetrievedChunk[] {
+	const best = new Map<string, RetrievedChunk>();
+	for (const chunk of resultSets.flat()) {
+		const seen = best.get(chunk.id);
+		if (!seen || chunk.distance < seen.distance) best.set(chunk.id, chunk);
+	}
+	return [...best.values()].sort((a, b) => a.distance - b.distance).slice(0, limit);
+}
+
+function toChunk(row: Record<string, unknown>): RetrievedChunk {
+	return {
 		id: String(row.id),
 		sourceId: String(row.source_id),
 		season: String(row.season),
@@ -53,5 +70,5 @@ export async function searchChunks(
 		text: String(row.text),
 		page: Number(row.page),
 		distance: Number(row.distance)
-	}));
+	};
 }

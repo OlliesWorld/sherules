@@ -49,6 +49,7 @@ interface CaseResult {
 	retrievedRefs: string[];
 	citedRefs: string[];
 	notes?: RulebookAnswer['notes'];
+	retrieval: RulebookAnswer['retrieval'];
 }
 
 const args = process.argv.slice(2);
@@ -107,7 +108,8 @@ function grade(evalCase: EvalCase, response: RulebookAnswer): CaseResult {
 		answer: response.answer,
 		retrievedRefs,
 		citedRefs,
-		notes: response.notes
+		notes: response.notes,
+		retrieval: response.retrieval
 	};
 
 	if (evalCase.expect === 'not_found') {

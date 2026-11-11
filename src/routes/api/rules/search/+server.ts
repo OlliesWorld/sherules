@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import { SHERULES_AGENT_KEY } from '$app/env/private';
 import { handleAgentSearch } from '#lib/server/agent-search.ts';
 import { db, ragDeps } from '#lib/server/clients.ts';
+import { expandWithGlossary, findGlossaryEntries } from '#lib/server/glossary.ts';
 import { searchChunks } from '#lib/server/search.ts';
 import type { RequestHandler } from './$types';
 
@@ -14,7 +15,16 @@ export const GET: RequestHandler = async ({ request, url }) => {
 		providedKey: request.headers.get('x-sherules-key'),
 		expectedKey: SHERULES_AGENT_KEY,
 		query: url.searchParams.get('q'),
-		search: (query, limit) => searchChunks(db, ragDeps.embedder, query, 'volleyball', 'ncaa', limit)
+		// Glossary terms only (no rewrite model call), so the voice agent stays fast.
+		search: (query, limit) =>
+			searchChunks(
+				db,
+				ragDeps.embedder,
+				expandWithGlossary(query, findGlossaryEntries(query, 'volleyball', 'ncaa')),
+				'volleyball',
+				'ncaa',
+				limit
+			)
 	});
 
 	// Results depend on the key and query, so never cache them.
