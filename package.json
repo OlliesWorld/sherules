@@ -41,7 +41,7 @@
 		"@upstash/redis": "^1.39.0",
 		"clsx": "^2.1.1",
 		"livekit-client": "^2.23.0",
-		"livekit-server-sdk": "^2.19.1",
+		"livekit-server-sdk": "^2.19.2",
 		"mode-watcher": "^1.1.0",
 		"redis": "^6.3.0",
 		"tailwind-merge": "^3.7.0",
