@@ -2,7 +2,7 @@
 
 **Date:** November 9–10, 2026
 **Reviewed:** the homepage (`/`) and the NCAA volleyball question page (`/volleyball/ncaa`), showing a real question and answer from the live site
-**Status:** round 1 and round 2 (league tabs) changes merged to `main`
+**Status:** round 1 and round 2 (league tabs) changes merged to `main`. **Update, November 19, 2026:** the league tabs have since been removed. Visitors now ask on the sport page and the site works out the league from the question (asking "Which league?" when it can't tell), so the open round 2 items about the disabled question box and "Tap a league to start" no longer apply.
 
 ## Summary
 

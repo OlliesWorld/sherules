@@ -26,10 +26,9 @@ Ask a rules question about a women's sport and get a short, plain answer taken o
 
 **The user's flow:**
 1. Pick a sport (Volleyball, Basketball, Soccer, Rugby, Hockey)
-2. Pick a league (e.g. NCAA, WNBA, NWSL, PWHL), or go straight to the page for a sport with one page (Rugby)
-3. Ask a question in their own words, or tap an example
-4. Read a short answer, with each cited rule shown as a card linking to the official PDF page
-5. If the rulebook doesn't cover it, get "I can't find that in the rulebook" instead of a guess
+2. Ask a question in their own words, or tap an example. No league click first: the site works out the league from the question (a league's name, a term only one league uses, a team or player) and asks "Which league?" only when it can't tell
+3. Read a short answer, labeled with the league's rulebook (e.g. "WNBA rule"), with each cited rule shown as a card linking to the official PDF page, and how other leagues differ when we know
+4. If the rulebook doesn't cover it, get "I can't find that in the rulebook" instead of a guess
 
 **Long-term vision:** Every major women's sport and league, kept current each season, with answers people trust enough to settle an argument in the stands.
 
@@ -83,8 +82,9 @@ Pages that answer from another body's rules say so in the banner, with a note:
 NCAA soccer and NCAA ice hockey books cover men and women; answers give the women's rule where they differ.
 
 **Site**
-- Home lists only sports that have data; each sport lists only leagues that have data
-- League page: banner naming the rulebook and season, question box, example questions, answer with rule cards
+- Home lists only sports that have data
+- Sport page: one question box for all of the sport's leagues, example questions, "Which league?" when the question doesn't say, answer labeled with the league's rulebook and season, rule cards, "Ask NCAA instead" to switch leagues
+- League pages (`/<sport>/<league>`) still exist for one-league sports (Rugby), the voice agent and old links
 - Light and dark themes (follows the device setting, with a toggle)
 - Per-sport accent color (teal volleyball, orange basketball, navy soccer, red rugby, purple hockey), checked for WCAG AA contrast in both themes
 
@@ -110,18 +110,21 @@ NCAA soccer and NCAA ice hockey books cover men and women; answers give the wome
 
 ### Flow 1: Ask a question
 ```
-Home → pick sport → pick league
-→ League page: "Answers from the 2026-27 NCAA rulebook"
-→ Type a question (or tap an example)
+Home → pick sport
+→ Sport page: type a question (or tap an example)
+→ League named or recognizable? Answer from that league's book
+   Not sure? "Which league?" → tap one (a follow-up question stays with the last league)
 → "Checking the rulebook…"
-→ Answer: plain text + "From the rulebook" cards (rule number, rule text, source + page link)
+→ Answer: "WNBA RULE from the 2026 WNBA rulebook" + plain text
+   + how other leagues differ (e.g. "NCAA: Reset is a WNBA rule…") + "Ask NCAA instead"
+   + "From the rulebook" cards (rule number, rule text, source + page link)
    or: "I can't find that in the rulebook" + tips + example questions
    or: "Something went wrong" + Try again (question kept; doesn't use up a free question)
 ```
 
 ### Flow 2: Daily limit reached
 ```
-League page shows "0 of 5 free questions left today"
+After an answer, the page shows "0 of 5 free questions left today"
 → Question box disabled
 → Card: "That's your 5 questions for today. Come back tomorrow for more."
 (If the site-wide cap is reached: "We've answered all the questions we can for today.")
@@ -166,7 +169,7 @@ The test set is small (about 6 questions per page) and written by us, so these a
 
 Free at launch, capped at 5 questions per visitor per day and 500 per day site-wide to control AI costs. A question costs about $0.0015 in Gemini usage ($0.004 at worst), so the site-wide cap bounds spend at roughly $0.75–2 per day. Paid tiers (more questions, saved history) can be revisited after usage data.
 
-Running costs are almost entirely Gemini usage (2 calls per question). Database and Redis usage fit comfortably in free tiers (see TECH_SPEC §9).
+Running costs are almost entirely Gemini usage (embeddings, a query rewrite and the answer per question, plus a small league guess when a sport-page question names no league). Database and Redis usage fit comfortably in free tiers (see TECH_SPEC §9).
 
 ---
 

@@ -32,18 +32,18 @@
 | Clickjacking | `frame-ancestors 'none'` + `X-Frame-Options: DENY` | `vite.config.ts`, `src/hooks.server.ts` |
 | Other headers | `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (camera, location, payment off; microphone for this site only, for voice) | `src/hooks.server.ts` |
 | CSRF | SvelteKit 3 always checks the origin on form posts | framework |
-| AI spend | Typed questions: 5 per visitor per day, 500 site-wide. Voice: 3 conversations per visitor per day, 100 site-wide, 3 minutes each and hung up after 30 seconds of silence (ended by the browser; set a session limit in LiveKit as a backstop). If the limits can't run in production, questions and voice are refused rather than left unlimited | `src/lib/server/rate-limit.ts`, league `+page.server.ts`, `api/voice/token` |
+| AI spend | Typed questions: 5 per visitor per day, 500 site-wide. Voice: 3 conversations per visitor per day, 100 site-wide, 3 minutes each and hung up after 30 seconds of silence (ended by the browser; set a session limit in LiveKit as a backstop). If the limits can't run in production, questions and voice are refused rather than left unlimited. League guesses on the sport page (one small Gemini call, cut off after 2 s): 20 per visitor per day, 2,000 site-wide; over the limit, or if limits can't run, the visitor is asked to pick a league instead | `src/lib/server/rate-limit.ts`, `ask.ts`, sport `+page.server.ts`, `api/voice/token` |
 | Client IP | Vercel overwrites `X-Forwarded-For` and doesn't forward client-supplied values | Vercel |
 | Visitor ids | HMAC-SHA-256 of date + IP with a secret (`RATE_LIMIT_SECRET`): can't be reversed by trying every IP; not linkable across days | `rate-limit.ts` |
 | Retention | Limit counters in Redis expire after 2 days; question log capped at 1,000 entries, no IP or visitor details | `rate-limit.ts`, `log.ts` |
 | Database access | The app only reads Turso (limits moved to Redis), so production can use a read-only token | `clients.ts` |
 | Invented citations | Citations not among retrieved chunks are dropped; no valid citation → "can't find" | `answer.ts` |
-| Prompt injection | Prompt tells the model to treat the question only as a rules question and ignore instructions in it; output must be JSON with a matching citation; rendered as plain text | `answer.ts` |
+| Prompt injection | Prompt tells the model to treat the question only as a rules question and ignore instructions in it; output must be JSON with a matching citation; rendered as plain text. The league guess and query rewrite get the same instruction; the guess can only return one of the sport's leagues (JSON enum, checked again in code) | `answer.ts`, `guess-league.ts`, `rewrite.ts` |
 | Copyright | Disclaimer under quoted rule text (names the rulebook, not affiliated or endorsed, official rulebook governs); the excerpts panel (all retrieved text) is sent only in local development | league `+page.svelte`, `+page.server.ts` |
 | Privacy notice | "Questions are saved anonymously to improve answers." under the question box | league `+page.svelte` |
 | Scraping / reads | Home and sport pages cached at Vercel's edge for 10 minutes | `catalog.ts` (`CATALOG_CACHE_HEADERS`) |
 | Errors | Users see generic messages; details only in server logs | league `+page.server.ts` |
-| Input size | Questions limited to 500 characters (client and server) | league page and action |
+| Input size | Questions limited to 500 characters (client and server); a picked league must be one of the sport's leagues | sport and league pages, `ask.ts` |
 | Dependencies | `npm audit --omit=dev`: 0 vulnerabilities; Dependabot weekly updates | `.github/dependabot.yml` |
 | Dev-only page | `/dev/colors` returns 404 in production | `routes/dev/colors` |
 | Voice agent search | `/api/rules/search` requires `x-sherules-key` (constant-time check); retrieval only; no caching | `agent-search.ts` |
