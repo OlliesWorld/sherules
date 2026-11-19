@@ -22,10 +22,17 @@
 	let sport = $derived(pageSport ?? 'volleyball');
 
 	// Home › Volleyball, built from the URL. None on the home page or error pages.
-	// The league isn't a crumb: the league picker on the page shows it and switches it.
+	// The league isn't a crumb: the page heading names it. On a league page the sport
+	// links back to the sport page, where questions for every league are asked.
 	let crumbs = $derived<Crumb[]>(
 		page.params.sport && !page.error
-			? [{ label: 'Home', href: '/' }, { label: sportName(page.params.sport) }]
+			? [
+					{ label: 'Home', href: '/' },
+					{
+						label: sportName(page.params.sport),
+						href: page.params.league ? `/${page.params.sport}` : undefined
+					}
+				]
 			: []
 	);
 </script>

@@ -10,8 +10,16 @@ export interface QuestionLogEntry {
 	question: string;
 	sport: string;
 	league: string;
-	/** rate_limited = this visitor's daily limit; at_capacity = the site-wide daily cap. */
-	result: 'answered' | 'not_found' | 'rate_limited' | 'at_capacity' | 'error';
+	/**
+	 * rate_limited = this visitor's daily limit; at_capacity = the site-wide daily cap.
+	 * league_asked = asked on a sport page, and nothing pointed to a league, so the visitor was asked to pick.
+	 */
+	result: 'answered' | 'not_found' | 'rate_limited' | 'at_capacity' | 'error' | 'league_asked';
+	/**
+	 * Asked on a sport page: how the league was chosen. picked = the visitor chose it,
+	 * named = the question named it, guessed = the model's guess, previous = same as the last answer.
+	 */
+	leagueFrom?: 'picked' | 'named' | 'guessed' | 'previous';
 	/** Rule refs cited in the answer. */
 	citations?: string[];
 	/** Rule refs search returned, closest first, with distance. For checking retrieval. */
