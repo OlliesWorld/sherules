@@ -56,8 +56,17 @@ export async function generateAnswer(
 	const excerpts = chunks
 		.map((chunk) => `[${chunk.ruleRef}] (${chunk.type}) ${chunk.headingPath}\n${chunk.text}`)
 		.join('\n\n---\n\n');
+	// The system instruction alone wasn't enough: given "NCAA has no Reset; the closest rule is
+	// the 30-second timeout" and that rule's excerpt, the model still said "can't find" every time.
+	// Spelling out what to do, right next to the notes, fixes it.
 	const terminology =
-		terminologyNotes.length > 0 ? `Terminology notes (not rule text):\n${terminologyNotes.map((note) => `- ${note}`).join('\n')}\n\n---\n\n` : '';
+		terminologyNotes.length > 0
+			? `Terminology notes (not rule text):\n${terminologyNotes.map((note) => `- ${note}`).join('\n')}\n\n` +
+				'The question may use a term this rulebook names differently or does not have. That alone is not a ' +
+				'reason to answer "not found". If the excerpts contain the rule the notes say this rulebook uses, or the ' +
+				'closest one, set "found" to true: first say briefly that this rulebook has no rule by the asked name ' +
+				'(or what it calls it instead), then answer from that rule and cite it.\n\n---\n\n'
+			: '';
 
 	// Temperature and other sampling settings are left at the model's defaults.
 	const response = await genai.models.generateContent({

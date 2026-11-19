@@ -74,12 +74,14 @@ export async function askRulebook(
 		return { found: false, answer: NOT_FOUND_ANSWER, citations: [], excerpts, retrieval };
 	}
 
-	const generated = await generateAnswer(
-		deps.genai,
-		question,
-		chunks,
-		glossary.map((entry) => entry.note)
-	);
+	const notes = glossary.map((entry) => entry.note);
+	let generated = await generateAnswer(deps.genai, question, chunks, notes);
+	// With a terminology note ("NCAA has no Reset; the closest rule is…") the model still
+	// sometimes says "can't find" (about 1 in 4 in testing). Those are the questions where a
+	// different word is the whole problem, so one more try is worth it. Rare, so cheap.
+	if (!generated.found && notes.length > 0) {
+		generated = await generateAnswer(deps.genai, question, chunks, notes);
+	}
 
 	const citations = generated.citedRefs.map((ref) => {
 		const excerpt = excerpts.find((e) => e.ruleRef === ref)!;
