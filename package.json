@@ -19,7 +19,7 @@
 		"test": "tsx --test src/lib/server/agent-search.test.ts src/lib/server/voice.test.ts src/lib/server/citations.test.ts src/lib/server/glossary.test.ts src/lib/server/guess-league.test.ts"
 	},
 	"devDependencies": {
-		"@sveltejs/adapter-vercel": "^7.0.0",
+		"@sveltejs/adapter-vercel": "^7.0.3",
 		"@sveltejs/kit": "^3.1.0",
 		"@sveltejs/vite-plugin-svelte": "^7.2.0",
 		"@tailwindcss/vite": "^4.3.0",
