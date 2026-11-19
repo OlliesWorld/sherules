@@ -72,7 +72,7 @@ Ask a rules question about a women's sport and get a short, plain answer taken o
 | Soccer | NWSL | IFAB Laws of the Game 2026/27 + NWSL 2026 Competition Rules & Regulations | 2026 | 103 + 33 |
 | Rugby | All leagues | World Rugby Laws of the Game 2026 (incl. sevens variations) | 2026 | 223 |
 | Hockey | NCAA | NCAA Men's and Women's Ice Hockey Rules + women's interpretations and experimental rule | 2026-27 | 312 + 4 + 1 |
-| Hockey | PWHL | PWHL Official Rule Book | 2025-26 | 525 |
+| Hockey | PWHL | PWHL Official Rule Book | 2026-27 | 525 |
 | Hockey | USA Hockey | USA Hockey Official Rules and Casebook | 2025-29 | 780 |
 
 Pages that answer from another body's rules say so in the banner, with a note:

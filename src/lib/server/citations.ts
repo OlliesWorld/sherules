@@ -16,7 +16,7 @@ export function matchCitation(cited: string, chunkRefs: string[]): string | unde
 	if (exact) return exact;
 
 	const containing = chunkRefs
-		.filter((ref) => contains(normalizeRef(ref), target))
+		.filter((ref) => contains(ref, target))
 		.sort((a, b) => normalizeRef(b).length - normalizeRef(a).length);
 	return containing[0];
 }
@@ -35,10 +35,15 @@ export function normalizeRef(ref: string): string {
 		.replace(/[\s,]/g, '');
 }
 
-/** Whether the chunk labeled `chunk` holds the rule `target` (both normalized). */
-function contains(chunk: string, target: string): boolean {
+/** Whether the chunk labeled `chunkRef` holds the rule `target` (normalized). */
+function contains(chunkRef: string, target: string): boolean {
+	const chunk = normalizeRef(chunkRef);
 	// A sub-rule of the chunk: "11.3" holds "11.3.1"; "604" holds "604(a)".
 	if (target.startsWith(chunk) && /^[.(]/.test(target.slice(chunk.length))) return true;
+
+	// Chunk labels write ranges with an en dash ("Law 8.1–8.2"). A plain hyphen is part of a
+	// rule number ("Rule 5-14.11" in NCAA basketball), which must not read as "5 through 14.11".
+	if (!chunkRef.includes('–')) return false;
 
 	// A range of numbered rules: "law8.1-8.2" holds "law8.1" and "law8.2.3".
 	const numbered = chunk.match(/^(.*?)(\d+(?:\.\d+)*)-(\d+(?:\.\d+)*)$/);
@@ -58,6 +63,16 @@ function contains(chunk: string, target: string): boolean {
 		const [, base, from, to] = lettered;
 		const cited = target.match(/^(.*?)\(([a-z])\)/);
 		return !!cited && cited[1] === base && from <= cited[2] && cited[2] <= to;
+	}
+
+	// A range of bare lettered items (WNBA): "Rule 5, Section VI-A, a–e" holds "…VI-A, c".
+	const bare = chunk.match(/^(.*)([a-z])-([a-z])$/);
+	if (bare) {
+		const [, base, from, to] = bare;
+		const rest = target.slice(base.length);
+		return (
+			target.startsWith(base) && /^[a-z]([.(]|$)/.test(rest) && from <= rest[0] && rest[0] <= to
+		);
 	}
 
 	return false;

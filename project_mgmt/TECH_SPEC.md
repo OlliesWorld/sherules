@@ -123,7 +123,7 @@ Each source declares: `id`, display `name`, official `url`, local `file` (in git
 | `ncaa-hockey-2026-28` | `ncaa-hockey` | 14–126 rules; 133–135, 142–145 appendices | 312 |
 | `ncaa-womens-hockey-interpretations-2026-1` | `memo` | 1–2 | 4 |
 | `ncaa-womens-hockey-experimental-2026-27` | `memo` | 1 | 1 |
-| `pwhl-rules-2025-26` | `pwhl-rules` | 18–159 | 525 |
+| `pwhl-rules-2026-27` | `pwhl-rules` | 18–159 | 525 |
 | `usah-rules-casebook-2025-29` | `usah-rules` | 35–376 rules and casebook, 409–416 glossary | 128 + 652 |
 
 ### 4.2 Parsers (one per rulebook layout)

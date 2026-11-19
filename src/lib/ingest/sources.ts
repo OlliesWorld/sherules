@@ -307,13 +307,16 @@ export const sources: Source[] = [
 		skipped: []
 	},
 	{
-		id: 'pwhl-rules-2025-26',
-		name: 'PWHL Official Rule Book 2025-2026',
-		url: 'https://assets.contentstack.io/v3/assets/bltebdb4296e05d53db/bltb8440fe08a5e6dc5/69178cd0a582d7db321ad107/2025-2026_PWHL_Rulebook.pdf',
-		file: 'data/hockey/2025-2026_PWHL_Rulebook.pdf',
+		// Replaces the 2025-26 book (id pwhl-rules-2025-26), whose chunks must be removed after
+		// ingesting this one. New for 2026-27: 9.10 Neck Protector (now required), 52.1 Body
+		// Checking (what's permitted and illegal), 82.1 High-sticking the Puck (now permitted).
+		id: 'pwhl-rules-2026-27',
+		name: 'PWHL Official Rule Book 2026-2027',
+		url: 'https://assets.contentstack.io/v3/assets/bltebdb4296e05d53db/bltd82f0a159432064b/6aec8f81d1a90d8df83faeba/2026-27_PWHL_Official_Rulebook.pdf',
+		file: 'data/hockey/2026-27_PWHL_Official_Rulebook.pdf',
 		sport: 'hockey',
 		league: 'pwhl',
-		season: '2025-26',
+		season: '2026-27',
 		division: 'all',
 		parser: 'pwhl-rules',
 		ranges: [

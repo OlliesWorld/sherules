@@ -32,6 +32,24 @@ describe('matchCitation', () => {
 		assert.equal(matchCitation('Rule 604(b)', ['Rule 604(c)–(f)']), undefined);
 	});
 
+	// From the eval: the WNBA's TV-timeout answer was right, but this citation was dropped.
+	it('maps a bare lettered item inside a WNBA-style range', () => {
+		const wnba = ['Rule 5, Section VI-A, a–e', 'Rule 5, Section VI-A, f–k', 'Rule 5, Section VI-B, a–i'];
+		assert.equal(matchCitation('Rule 5, Section VI-A, c', wnba), 'Rule 5, Section VI-A, a–e');
+		assert.equal(matchCitation('Rule 5, Section VI-A, g', wnba), 'Rule 5, Section VI-A, f–k');
+		assert.equal(matchCitation('Rule 5, Section VI-B, c', wnba), 'Rule 5, Section VI-B, a–i');
+		assert.equal(matchCitation('Rule 5, Section VI-A, m', wnba), undefined);
+		assert.equal(matchCitation('Rule 5, Section VI-C, c', wnba), undefined);
+	});
+
+	// From the eval: "5-14.11" was read as the range "5 through 14.11", so it claimed this citation.
+	it('reads an NCAA basketball hyphen as part of the rule number, not a range', () => {
+		const ncaa = ['Rule 5-13.2', 'Rule 5-14.11', 'Rule 5-14.10', 'Rule 5-14.1'];
+		assert.equal(matchCitation('Rule 5-14.10.b', ncaa), 'Rule 5-14.10');
+		assert.equal(matchCitation('Rule 5-14.10', ncaa), 'Rule 5-14.10');
+		assert.equal(matchCitation('Rule 7-3', ['Rule 5-14.11', 'Rule 9-10']), undefined);
+	});
+
 	it('matches nothing for a rule that is not in any retrieved chunk', () => {
 		assert.equal(matchCitation('Rule 11.30', ['Rule 11.3']), undefined);
 		assert.equal(matchCitation('Rule 113', ['Rule 11.3']), undefined);

@@ -3,6 +3,8 @@
 // Usage:
 //   npm run ingest -- <source-id>             parse, embed and store
 //   npm run ingest -- <source-id> --dry-run   parse and print the summary only (no API calls, no DB)
+//   npm run ingest -- <source-id> --remove    delete a source's chunks, e.g. last season's book
+//                                             after the new one is ingested (no PDF or Gemini needed)
 //
 // Source ids are listed in src/lib/ingest/sources.ts.
 import { parsers } from '#lib/ingest/parsers.ts';
@@ -15,6 +17,12 @@ import { createEmbedder, documentInput, EMBEDDING_MODEL_TAG } from '#lib/server/
 async function main() {
 	const [sourceId, ...flags] = process.argv.slice(2);
 	const dryRun = flags.includes('--dry-run');
+
+	// A retired source is usually gone from sources.ts already, so this takes any id.
+	if (sourceId && flags.includes('--remove')) {
+		await removeSource(sourceId);
+		return;
+	}
 
 	const source = sourceId ? getSource(sourceId) : undefined;
 	if (!source) {
@@ -69,6 +77,21 @@ async function main() {
 
 	const stored = await db.execute({ sql: 'SELECT COUNT(*) AS n FROM chunks WHERE source_id = ?', args: [source.id] });
 	console.log(`Stored ${stored.rows[0].n} chunks for ${source.id}\n`);
+}
+
+/** Deletes every chunk stored for a source id, after showing how many there are. */
+async function removeSource(sourceId: string) {
+	const db = createDb(requireEnv('TURSO_DATABASE_URL'), process.env.TURSO_AUTH_TOKEN || undefined);
+	const count = async () =>
+		Number((await db.execute({ sql: 'SELECT COUNT(*) AS n FROM chunks WHERE source_id = ?', args: [sourceId] })).rows[0].n);
+
+	const before = await count();
+	if (before === 0) {
+		console.log(`No chunks stored for ${sourceId}. Nothing to remove.`);
+		return;
+	}
+	await db.execute({ sql: 'DELETE FROM chunks WHERE source_id = ?', args: [sourceId] });
+	console.log(`Removed ${before} chunks for ${sourceId} (${await count()} left).`);
 }
 
 function printSummary(source: Source, pageCount: number, chunks: ParsedChunk[], problems: { page: number; reason: string }[]) {

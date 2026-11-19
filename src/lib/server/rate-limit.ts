@@ -24,6 +24,13 @@ export const ASK_LIMITS: LimitRule = { name: 'asks', perVisitor: 5, perDay: 500 
  */
 export const VOICE_LIMITS: LimitRule = { name: 'voice', perVisitor: 3, perDay: 100 };
 
+/**
+ * League guesses on the sport page (guess-league.ts): one small Gemini call each, only for
+ * questions that don't name a league. Over the limit, the visitor is just asked to pick.
+ * Higher than ASK_LIMITS so it never runs out before the visitor's questions do.
+ */
+export const LEAGUE_GUESS_LIMITS: LimitRule = { name: 'league-guess', perVisitor: 20, perDay: 2000 };
+
 /** Free questions per visitor per day (shown on the page). */
 export const ASKS_PER_DAY = ASK_LIMITS.perVisitor;
 

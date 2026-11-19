@@ -82,6 +82,24 @@ export const GLOSSARY: GlossaryEntry[] = [
 			'The IFAB Laws of the Game call a yellow card a "caution" and a red card a "sending-off".',
 		refs: ['Law 12.4 (Cautionable offences)', 'Law 12.4 (Sending-off offences)']
 	},
+	{
+		// The rulebook's own high-sticking rule (84.4) out-ranks the one-page experimental memo
+		// in search, so questions got the old "prohibited" answer. The memo's words pull it in.
+		sport: 'hockey',
+		league: 'ncaa',
+		asked: [
+			/\bhigh[\s-]*stick(s|ed|ing)?\b.*\bpucks?\b/i,
+			/\bpucks?\b.*\bhigh[\s-]*stick(s|ed|ing)?\b/i,
+			/\bbat(s|ted|ting)?\s+(the\s+|a\s+)?pucks?\b/i,
+			/\bpucks?\s+out\s+of\s+the\s+air\b/i
+		],
+		rulebookTerms: ['Unlimited High Sticking', 'batting pucks out of the air', 'play the puck with their sticks at any height'],
+		note:
+			'For the 2026-27 season, NCAA women\'s ice hockey uses an experimental "Unlimited High Sticking" rule in ' +
+			'conference play only (not the NCAA postseason): players may play the puck with their sticks at any height. ' +
+			'The rulebook\'s own high-sticking-the-puck rule still applies outside conference play.',
+		refs: ['Experimental Rule 2026-27: Unlimited High Sticking (conference play only, not the NCAA postseason)']
+	},
 	// Same idea in all three hockey rulebooks, at different rule numbers.
 	...(
 		[

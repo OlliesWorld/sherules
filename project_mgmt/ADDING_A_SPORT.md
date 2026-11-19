@@ -235,4 +235,4 @@ After shipping, update the source and parser tables in [TECH_SPEC.md](TECH_SPEC.
 ## Not covered by these steps
 
 - **Voice:** "Ask by voice" is only on NCAA volleyball (`VOICE_LEAGUES` in `src/lib/voice.ts`), and the agent's search endpoint only searches that page. Adding voice to another page is separate work.
-- **New seasons of an existing book:** download the new PDF and dry run it with the same parser. Layouts often shift slightly between editions, so check the summary carefully. A new source id keeps the old season's chunks unless you remove them.
+- **New seasons of an existing book:** download the new PDF and dry run it with the same parser. Layouts often shift slightly between editions, so check the summary carefully. A new source id keeps the old season's chunks unless you remove them. If the new book replaces the old one, remove the old chunks after ingesting the new ones (`npm run ingest -- <old-source-id> --remove`), or the page answers from both and can quote a rule that changed.

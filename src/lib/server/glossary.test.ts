@@ -43,6 +43,20 @@ describe('findGlossaryEntries', () => {
 			assert.ok(matches('Does a power play end on a goal?', 'hockey', league).includes('short-handed'), league);
 		}
 	});
+
+	it('points NCAA hockey high-sticking-the-puck questions at the experimental rule', () => {
+		for (const question of [
+			'Can players bat the puck out of the air with a high stick?',
+			'Is high sticking the puck allowed?',
+			'Can you score off a high-sticked puck?',
+			'Can a player bat the puck down?'
+		]) {
+			assert.ok(matches(question, 'hockey', 'ncaa').includes('Unlimited High Sticking'), question);
+		}
+		// High-sticking an opponent is a penalty question, and the PWHL has its own rule.
+		assert.deepEqual(matches('Is a high stick to the face a major penalty?', 'hockey', 'ncaa'), []);
+		assert.deepEqual(matches('Is high sticking the puck allowed?', 'hockey', 'pwhl'), []);
+	});
 });
 
 describe('expandWithGlossary', () => {
