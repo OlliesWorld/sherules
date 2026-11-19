@@ -2,7 +2,9 @@
 
 Ask a rules question about a women's sport and get a plain-language answer taken only from the official rulebook, with the rule cited and a link to the exact page of the official PDF.
 
-Currently covers 10 league pages across 5 sports:
+Pick a sport and ask. The site works out which league's rulebook to answer from: a league named in the question ("WNBA", "college"), a term only one league uses (the WNBA's "Reset"), or a team or player. When it can't tell, it asks.
+
+Currently covers 10 leagues across 5 sports:
 
 | Sport | Leagues |
 |---|---|
@@ -18,7 +20,7 @@ More detail: [`project_mgmt/`](project_mgmt/): PRD, technical spec, design spec,
 
 ## Setup
 
-Needs Node 22 or 24.
+Needs Node 24 (unpdf 2, which reads the rulebook PDFs, requires it). With nvm: `nvm install 24 && nvm alias default 24`.
 
 ```sh
 npm install
@@ -47,6 +49,9 @@ Rulebook PDFs are copyrighted, so they live in `data/`, which is gitignored and 
 5. If you changed a parser, check the other sources still parse the same: `npm run snapshot -- compare`
 6. Embed and store: `npm run ingest -- <source-id>`
 7. Add eval questions for the page and run `npm run eval`
+8. For a new season that replaces the old book, remove the old chunks: `npm run ingest -- <old-source-id> --remove`
+
+For a new league, also add its name (and nicknames) to `src/lib/league-detect.ts`, so questions that name it go to its rulebook.
 
 The full guide, including display settings and colors, is [`project_mgmt/ADDING_A_SPORT.md`](project_mgmt/ADDING_A_SPORT.md).
 
@@ -58,6 +63,7 @@ The full guide, including display settings and colors, is [`project_mgmt/ADDING_
 | `npm run check` | Type check |
 | `npm test` | Unit tests |
 | `npm run ingest -- <id> [--dry-run]` | Parse, embed and store a rulebook |
+| `npm run ingest -- <id> --remove` | Delete a source's chunks (e.g. last season's book) |
 | `npm run snapshot -- save\|compare [id...]` | Parser regression check (no API keys needed) |
 | `npm run ask -- <sport> <league> "<question>"` | Ask from the terminal; shows retrieved rules and distances |
 | `npm run eval [-- --page <sport/league>]` | Run the labeled eval questions; see [`EVALS.md`](project_mgmt/EVALS.md) |

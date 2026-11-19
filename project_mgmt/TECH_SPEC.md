@@ -20,8 +20,10 @@
 
 
                         QUESTION FLOW (Vercel, per request)
- Browser ──POST ?/ask──► SvelteKit form action
+ Browser ──POST ?/ask──► SvelteKit form action (sport page)
                            │ 1. validate (3–500 chars)
+                           │ 1b. choose the league: picked, named in the question, model guess
+                           │     (≤ 2 s), or the previous answer's league; else ask "Which league?"
                            │ 2. daily limits (Upstash Redis)  
                            │ 3. embed question (Gemini)
                            │ 4. top 5 chunks: WHERE sport, league, embedding_model
@@ -87,7 +89,10 @@ Counters, one key per visitor per day plus one for everyone:
 ```
 sherules:asks:<UTC date>:<HMAC-SHA-256(RATE_LIMIT_SECRET, "<date>:<IP>")>   per visitor (limit 5)
 sherules:asks:<UTC date>:all                                                site-wide (limit 500)
+sherules:league-guess:<UTC date>:<HMAC…>                                    model league guesses, per visitor (limit 20)
+sherules:league-guess:<UTC date>:all                                        site-wide (limit 2,000)
 ```
+Over the league-guess limit, the visitor is simply asked which league.
 `INCR` is atomic, so concurrent requests can't both slip under a limit; a rejected question is decremented back. Every key expires after 2 days. The app no longer writes to Turso.
 
 ### 3.3 Question log (Upstash Redis)
@@ -95,10 +100,12 @@ sherules:asks:<UTC date>:all                                                site
 List `sherules:logs`, newest first, trimmed to 1,000 entries:
 ```json
 { "question": "...", "sport": "basketball", "league": "ncaa",
-  "result": "answered | not_found | rate_limited | at_capacity | error",
+  "result": "answered | not_found | rate_limited | at_capacity | error | league_asked",
+  "leagueFrom": "picked | named | guessed | previous",
   "citations": ["Rule 4-12.1"], "retrieved": [{ "ruleRef": "Rule 4-12.1", "distance": 0.223 }],
   "ms": 2140, "timestamp": "2026-10-12T21:04:11.000Z" }
 ```
+`league_asked` means the sport page couldn't tell the league and asked the visitor (`league` is empty). `leagueFrom` is set for questions asked on a sport page.
 No IP or visitor details.
 
 ---
@@ -170,17 +177,21 @@ Each input is sent as its own `Content` object: a plain array of strings is merg
 
 | Step | File | Detail |
 |---|---|---|
-| Validate | `routes/[sport]/[league]/+page.server.ts` | 3–500 characters; validation failures don't count toward the limit |
+| Validate | `ask.ts` (`readQuestion`) | 3–500 characters; validation failures don't count toward the limit |
+| Choose league | `routes/[sport]/+page.server.ts`, `league-detect.ts`, `guess-league.ts` | Sport page only. In order: the league the visitor picked ("Which league?", "Ask NCAA instead"); a league named in the question, or failing that a term only one league uses (patterns in `league-detect.ts`); a flash-lite guess from clues like a team or player, cut off after 2 s and under its own daily limit; the previous answer's league. Otherwise the page asks "Which league?". League pages use the league in the URL |
 | Daily limits | `rate-limit.ts` | 5 per visitor and 500 site-wide per UTC day (Redis counters, HMAC visitor ids); if Redis or `RATE_LIMIT_SECRET` is missing in production, questions are refused; disabled when `dev` |
 | Glossary | `glossary.ts` | Verified term pairs ("reset timeout" → NCAA "30-second timeout"). A match adds the rulebook's terms to the search and a naming note to the answer prompt |
 | Rewrite | `rewrite.ts` | Flash-lite restates the question in this league's rulebook language (search only, never answered from); runs in parallel with the original search; failure falls back to the original |
 | Embed question | `embed.ts` | `task: search result | query: <question>`, once for the question as asked and once for the rewrite + glossary terms |
 | Retrieve | `search.ts` | Top 5 by `vector_distance_cos` per query, filtered by sport, league, embedding model; `mergeResults` keeps each chunk's closest distance and the top 5 overall |
-| Answer | `answer.ts` | Glossary notes are passed as "terminology notes (not rule text)", never cited. System prompt: excerpts only, cite refs in brackets, say "I can't find that in the rulebook", call out division differences. JSON `{found, answer, citations}` |
-| Citation check | `answer.ts` | Normalize refs; keep only refs among retrieved chunks; no valid citation → not found |
+| Answer | `answer.ts` | Glossary notes are passed as "terminology notes (not rule text)", never cited, with an instruction that a term this rulebook lacks is not a reason to decline: say so and answer from the closest rule. System prompt: excerpts only, cite refs in brackets, say "I can't find that in the rulebook", call out division differences. JSON `{found, answer, citations}`. A decline on a question with a glossary match gets one retry (`rag.ts`) |
+| Citation check | `answer.ts`, `citations.ts` | Map each cited ref to the retrieved chunk that holds it (sub-rules, en-dash ranges like "Law 8.1–8.2" or "a–e"; a plain hyphen is part of a rule number, as in NCAA "5-14.11"); drop the rest; no valid citation → not found |
 | Assemble | `rag.ts` | Citations get source name, `url#page=N`, and rule text |
+| Other leagues | `routes/[sport]/+page.server.ts` | Sport page only: glossary notes for the other leagues are shown under the answer ("NCAA: Reset is a WNBA rule…") |
 | Log | `log.ts` | Redis entry; never throws |
 | Refund | `rate-limit.ts` | On Gemini error, the question doesn't count |
+
+Limits, answering and logging are shared by both pages through `answerQuestion()` in `ask.ts`; the answer display is `AnswerPanel.svelte`.
 
 `askRulebook(deps, …)` takes its clients as an argument, so the app (`clients.ts`, using `$app/env/private`) and scripts/evals (using `process.env`) can each supply their own.
 
@@ -190,8 +201,11 @@ Each input is sent as its own `Content` object: a plain array of strings is merg
 
 ```
 /                         Sports with data
-/[sport]                  Leagues with data for that sport (404 if none)
-/[sport]/[league]         Banner, question form (action ?/ask), answer, rule cards (404 if no data)
+/[sport]                  Question form (action ?/ask) for every league of the sport: works out the
+                          league, or asks "Which league?"; answer, rule cards, "Ask <league> instead"
+                          (404 if no data; a one-league sport redirects to its league page)
+/[sport]/[league]         One league: banner, question form (action ?/ask), answer, rule cards (404 if
+                          no data). Not linked from multi-league sports; serves rugby, voice, old links
 /dev/colors               Sport color comparison — dev only, 404 in production
 ```
 
@@ -245,7 +259,7 @@ Production can use a **read-only** Turso token; ingest needs full access. Svelte
 |---|---|---|
 | Turso | ~1,736 chunks ≈ 8 MB; ~400–600 rows read per question, up to ~1,600 per page view | 5 GB storage, 500M rows read, 10M written per month |
 | Upstash Redis | ≤ 1,000 entries ≈ 1 MB; 2 commands per question | 256 MB, 500k commands per month |
-| Gemini | 1 embedding + 1 answer per question; one-time embeddings per ingest | Usage-based — set a budget alert |
+| Gemini | Per question: 2 embeddings, 1 rewrite, 1 answer (2 answers for the occasional glossary retry); plus 1 small league guess for sport-page questions that name no league. One-time embeddings per ingest | Usage-based — set a budget alert |
 | Vercel | Hobby plan | |
 
 ---

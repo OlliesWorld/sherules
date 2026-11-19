@@ -11,7 +11,7 @@ How to add a new sport, or a new league to an existing sport, from finding the r
 5. [ ] Add the source(s) to `src/lib/ingest/sources.ts`
 6. [ ] Dry run until the summary is clean
 7. [ ] Regression check: existing sources still parse the same (`npm run snapshot`)
-8. [ ] Display settings: names, color, icon, example questions
+8. [ ] Display settings: names, color, icon, example questions, and league names in `league-detect.ts`
 9. [ ] Add eval questions and run the eval
 10. [ ] `npm run check` and `npm test`
 11. [ ] Ingest, check locally, commit and push
@@ -20,7 +20,7 @@ Steps 1–10 need no API keys. Only the ingest (step 11) and the eval (step 9) d
 
 ## 1. Decide the pages and research the sources
 
-Each page is `/<sport>/<league>`, for example `/hockey/pwhl`. A page answers only from the sources ingested for that sport and league.
+Each league's rulebook is a "page" (`/<sport>/<league>`, for example `/hockey/pwhl`), and answers only from the sources ingested for that sport and league. Visitors ask from the sport page (`/hockey`), which works out the league from the question, so a new league also needs its names in `src/lib/league-detect.ts` (see §8).
 
 | Situation | What to do | Example |
 |---|---|---|
@@ -110,13 +110,13 @@ Add an entry to `src/lib/ingest/sources.ts`:
 
 ```ts
 {
-	id: 'pwhl-rules-2025-26',          // stored on every chunk; never change it after ingesting
-	name: 'PWHL Official Rule Book 2025-2026',   // shown on answer cards
-	url: 'https://…/2025-2026_PWHL_Rulebook.pdf', // direct PDF link (answers open url#page=N)
-	file: 'data/hockey/2025-2026_PWHL_Rulebook.pdf',
+	id: 'pwhl-rules-2026-27',          // stored on every chunk; never change it after ingesting
+	name: 'PWHL Official Rule Book 2026-2027',   // shown on answer cards
+	url: 'https://…/2026-27_PWHL_Official_Rulebook.pdf', // direct PDF link (answers open url#page=N)
+	file: 'data/hockey/2026-27_PWHL_Official_Rulebook.pdf',
 	sport: 'hockey',
 	league: 'pwhl',
-	season: '2025-26',
+	season: '2026-27',
 	division: 'all',
 	parser: 'pwhl-rules',
 	ranges: [{ from: 18, to: 159, type: 'rule' }],
@@ -168,7 +168,8 @@ A new parser that doesn't touch shared code can't change other sources, but the 
 
 | File | What to add |
 |---|---|
-| `src/lib/labels.ts` | `SPORT_NAMES` (sport), `LEAGUE_NAMES` and `LEAGUE_LEVELS` (new league slugs), `EXAMPLE_QUESTIONS` (four "Try asking" questions the rulebook answers), and `BORROWED_RULEBOOKS` for a page using another body's rules |
+| `src/lib/labels.ts` | `SPORT_NAMES` (sport), `LEAGUE_NAMES` (new league slugs), `EXAMPLE_QUESTIONS` (four "Try asking" questions the rulebook answers), and `BORROWED_RULEBOOKS` for a page using another body's rules |
+| `src/lib/league-detect.ts` | For a sport with more than one league: in `PATTERNS`, the league's names and nicknames ("WNBA", "college", "LOVB"), and which league "pro" means for the sport. In `TERMS`, words only this league's rulebook uses, if any. Add test questions to `guess-league.test.ts`, including ones that must not match |
 | `src/routes/layout.css` | A `[data-sport='<slug>']` block with the accent color |
 | `src/lib/components/SportIcon.svelte` | An original line drawing of the ball or puck, using `currentColor`. No league logos or marks |
 | `src/routes/dev/colors/+page.server.ts` | Add the sport to the list, to compare colors side by side |
