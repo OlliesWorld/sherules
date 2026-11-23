@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import { answerQuestion, LIMIT_ENABLED, readQuestion } from '#lib/server/ask.ts';
 import { listLeagueSources } from '#lib/server/catalog.ts';
 import { db, limiter, voiceConfig } from '#lib/server/clients.ts';
-import { ASKS_PER_DAY, asksLeft } from '#lib/server/rate-limit.ts';
+import { ASKS_PER_DAY, asksLeft, ipGate } from '#lib/server/rate-limit.ts';
 import { voiceAvailableFor } from '#lib/voice.ts';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -38,9 +38,10 @@ export const load: PageServerLoad = async ({ params, getClientAddress }) => {
 // Next.js server actions. `?/ask` in the form's action attribute picks this one.
 export const actions = {
 	ask: async ({ request, params, getClientAddress }) => {
-		const read = readQuestion(await request.formData());
+		const read = readQuestion((await request.formData()).get('question'));
 		if (read.failure) return read.failure;
 		// getClientAddress() is the visitor's IP (on Vercel, set by Vercel and not spoofable).
-		return answerQuestion({ question: read.question, sport: params.sport, league: params.league, ip: getClientAddress() });
+		const gate = limiter ? ipGate(limiter, getClientAddress()) : null;
+		return answerQuestion({ question: read.question, sport: params.sport, league: params.league, gate });
 	}
 } satisfies Actions;

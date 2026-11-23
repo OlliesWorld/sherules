@@ -31,6 +31,26 @@ export const VOICE_LIMITS: LimitRule = { name: 'voice', perVisitor: 3, perDay: 1
  */
 export const LEAGUE_GUESS_LIMITS: LimitRule = { name: 'league-guess', perVisitor: 20, perDay: 2000 };
 
+// The mobile app's limits. An app visitor is an install (a signed install token, see
+// install-token.ts), not an IP: phones on cellular often share one IP with many strangers.
+// Each app rule has its own site-wide count, separate from the website's.
+
+/** Typed questions from the app, per install. */
+export const APP_ASK_LIMITS: LimitRule = { name: 'app-asks', perVisitor: 5, perDay: 300 };
+
+/**
+ * App questions per IP, across every install on it. Loose enough for a shared carrier IP,
+ * but stops one machine minting install tokens for unlimited questions. Only the
+ * per-visitor count matters here: APP_ASK_LIMITS has the site-wide cap.
+ */
+export const APP_IP_CEILING: LimitRule = { name: 'app-ip', perVisitor: 25, perDay: Number.MAX_SAFE_INTEGER };
+
+/** League guesses from the app, per install (see LEAGUE_GUESS_LIMITS). */
+export const APP_LEAGUE_GUESS_LIMITS: LimitRule = { name: 'app-league-guess', perVisitor: 20, perDay: 1200 };
+
+/** New install tokens per IP. Reinstalling gets a new token, but only this many a day. */
+export const INSTALL_LIMITS: LimitRule = { name: 'app-install', perVisitor: 5, perDay: 5000 };
+
 /** Free questions per visitor per day (shown on the page). */
 export const ASKS_PER_DAY = ASK_LIMITS.perVisitor;
 
@@ -109,4 +129,68 @@ export async function refundAsk(limiter: Limiter, ip: string, rule: LimitRule = 
 	const day = today();
 	await limiter.counter.decr(visitorKey(limiter, rule, ip, day));
 	await limiter.counter.decr(everyoneKey(rule, day));
+}
+
+/**
+ * Takes one use from each rule in order. If one is over its limit, the uses already taken
+ * are given back (newest first) and that rule's result is returned.
+ */
+export async function takeAll(limiter: Limiter, steps: [LimitRule, string][]): Promise<AskResult> {
+	const taken: [LimitRule, string][] = [];
+	for (const [rule, id] of steps) {
+		const result = await takeAsk(limiter, id, rule);
+		if (result !== 'ok') {
+			for (const [takenRule, takenId] of taken.reverse()) await refundAsk(limiter, takenId, takenRule);
+			return result;
+		}
+		taken.push([rule, id]);
+	}
+	return 'ok';
+}
+
+/**
+ * The daily limits for one visitor, whoever they are (a website IP or an app install).
+ * Answering code (ask.ts) only talks to this, so it doesn't care where the limits come from.
+ */
+export interface LimitGate {
+	/** Uses up one question. */
+	take(): Promise<AskResult>;
+	/** Questions left today. */
+	left(): Promise<number>;
+	/** Gives a question back (the visitor got no answer). */
+	refund(): Promise<void>;
+	/** Uses up one league guess (sport page). */
+	takeGuess(): Promise<AskResult>;
+}
+
+/** The website's limits: counted per IP. */
+export function ipGate(limiter: Limiter, ip: string): LimitGate {
+	return {
+		take: () => takeAsk(limiter, ip),
+		left: () => asksLeft(limiter, ip),
+		refund: () => refundAsk(limiter, ip),
+		takeGuess: () => takeAsk(limiter, ip, LEAGUE_GUESS_LIMITS)
+	};
+}
+
+// Install ids and IPs are hashed into separate keys per rule name, but prefixing keeps an
+// install id from ever colliding with an IP string under the same rule.
+const installKey = (installId: string) => `install:${installId}`;
+
+/** The app's limits: counted per install, under a per-IP ceiling. */
+export function appGate(limiter: Limiter, installId: string, ip: string): LimitGate {
+	const install = installKey(installId);
+	return {
+		take: () =>
+			takeAll(limiter, [
+				[APP_IP_CEILING, ip],
+				[APP_ASK_LIMITS, install]
+			]),
+		left: () => asksLeft(limiter, install, APP_ASK_LIMITS),
+		refund: async () => {
+			await refundAsk(limiter, install, APP_ASK_LIMITS);
+			await refundAsk(limiter, ip, APP_IP_CEILING);
+		},
+		takeGuess: () => takeAsk(limiter, install, APP_LEAGUE_GUESS_LIMITS)
+	};
 }

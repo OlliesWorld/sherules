@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Citation } from '#lib/server/rag.ts';
+	import type { Citation } from '#lib/types.ts';
 
 	// One cited rule: the big rule number, the rule text, and a link to the PDF page.
 	let { citation }: { citation: Citation } = $props();

@@ -1,19 +1,6 @@
-<script lang="ts" module>
-	// Type-only import: nothing from the server module reaches the browser.
-	import type { RulebookAnswer } from '#lib/server/rag.ts';
-
-	/** What an `ask` action returned (or passed to fail()). */
-	export interface AskOutcome {
-		question?: string;
-		error?: string;
-		limitReached?: boolean;
-		atCapacity?: boolean;
-		result?: RulebookAnswer;
-	}
-</script>
-
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import type { AskOutcome } from '#lib/types.ts';
 	import RuleCard from '#lib/components/RuleCard.svelte';
 	import SportIcon from '#lib/components/SportIcon.svelte';
 	import { Button } from '#lib/components/ui/button/index.ts';
