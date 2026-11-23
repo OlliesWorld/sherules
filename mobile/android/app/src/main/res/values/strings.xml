@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SheRules</string>
+    <string name="title_activity_main">SheRules</string>
+    <string name="package_name">xyz.olliesworld.sherules</string>
+    <string name="custom_url_scheme">xyz.olliesworld.sherules</string>
+</resources>

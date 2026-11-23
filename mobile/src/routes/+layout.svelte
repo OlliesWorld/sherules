@@ -10,8 +10,11 @@
 	import '@fontsource/jetbrains-mono/latin-400.css';
 	import '@fontsource/jetbrains-mono/latin-700.css';
 	import '../app.css';
+	import { App } from '@capacitor/app';
 	import { Browser } from '@capacitor/browser';
 	import { Capacitor } from '@capacitor/core';
+	import { SplashScreen } from '@capacitor/splash-screen';
+	import { onMount } from 'svelte';
 	import Breadcrumbs, { type Crumb } from '#lib/components/Breadcrumbs.svelte';
 	import HeroDecor from '#lib/components/HeroDecor.svelte';
 	import SportIcon from '#lib/components/SportIcon.svelte';
@@ -19,7 +22,8 @@
 	import WhistleMark from '#lib/components/WhistleMark.svelte';
 	import { sportName } from '#lib/labels.ts';
 	import { page } from '$app/state';
-	import { ModeWatcher } from 'mode-watcher';
+	import { ModeWatcher, mode } from 'mode-watcher';
+	import { matchSystemBars } from '#mobile/system-bars.ts';
 	import type { LayoutProps } from './$types';
 
 	// The website's layout (src/routes/+layout.svelte), for the app. Fonts are bundled
@@ -40,10 +44,29 @@
 			: []
 	);
 
+	const native = Capacitor.isNativePlatform();
+
+	onMount(() => {
+		if (!native) return;
+		// The first screen has drawn: swap the native splash for it (see capacitor.config.ts).
+		SplashScreen.hide();
+		// Android's back button goes back a screen, and leaves the app from the home screen.
+		const back = App.addListener('backButton', ({ canGoBack }) => {
+			if (canGoBack) history.back();
+			else App.exitApp();
+		});
+		return () => back.then((listener) => listener.remove());
+	});
+
+	// Status bar (and Android navigation bar) colours follow the app's theme, including the toggle.
+	$effect(() => {
+		matchSystemBars(mode.current === 'dark');
+	});
+
 	// Links off the app (the rulebook PDFs) open in an in-app browser sheet, so the app
 	// stays underneath. In a desktop browser (mobile:dev) they open in a new tab as usual.
 	function openExternalLinks(event: MouseEvent) {
-		if (!Capacitor.isNativePlatform() || event.defaultPrevented) return;
+		if (!native || event.defaultPrevented) return;
 		const link = (event.target as Element | null)?.closest?.('a[href]');
 		if (!(link instanceof HTMLAnchorElement) || link.origin === location.origin) return;
 		event.preventDefault();

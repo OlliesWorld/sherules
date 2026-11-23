@@ -69,6 +69,9 @@ The full guide, including display settings and colors, is [`project_mgmt/ADDING_
 | `npm run eval [-- --page <sport/league>]` | Run the labeled eval questions; see [`EVALS.md`](project_mgmt/EVALS.md) |
 | `npm run logs [-- 50] [--misses]` | Recent questions from the Redis log; `--misses` shows only "not found" answers, with the rewrite and closest rules |
 | `npm run db:check` | Check the Turso connection and vector support |
+| `npm run mobile:dev` | The iOS/Android app in a browser on :5174; see [`MOBILE.md`](project_mgmt/MOBILE.md) |
+| `npm run mobile:sync` | Build the app and copy it into the native iOS and Android projects |
+| `npm run mobile:ios` / `mobile:android` | Open the native project in Xcode / Android Studio |
 
 ## Deploying
 
