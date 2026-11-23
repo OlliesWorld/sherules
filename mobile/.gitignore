@@ -1,0 +1,4 @@
+/.svelte-kit
+/build
+# Written by vite.config.ts from mode-watcher on every dev/build run.
+/static/theme-init.js

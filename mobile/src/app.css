@@ -1,0 +1,10 @@
+/* The website's theme: tokens, sport colors, motion. Shared, so the app looks the same. */
+@import '../../src/routes/layout.css';
+
+/* Tailwind only scans this project by default; the shared components live in the website's src/lib. */
+@source '../../src/lib';
+
+/* Keep content clear of the notch, the home indicator and rounded corners. */
+body {
+	padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}

@@ -3,6 +3,9 @@
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
+	"workspaces": [
+		"mobile"
+	],
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
@@ -16,7 +19,10 @@
 		"ask": "tsx --env-file-if-exists=.env scripts/ask.ts",
 		"eval": "tsx --env-file-if-exists=.env scripts/eval.ts",
 		"logs": "tsx --env-file-if-exists=.env scripts/logs.ts",
-		"test": "tsx --test src/lib/server/agent-search.test.ts src/lib/server/voice.test.ts src/lib/server/citations.test.ts src/lib/server/glossary.test.ts src/lib/server/guess-league.test.ts src/lib/server/install-token.test.ts src/lib/server/rate-limit.test.ts src/lib/server/api.test.ts"
+		"test": "tsx --test src/lib/server/agent-search.test.ts src/lib/server/voice.test.ts src/lib/server/citations.test.ts src/lib/server/glossary.test.ts src/lib/server/guess-league.test.ts src/lib/server/install-token.test.ts src/lib/server/rate-limit.test.ts src/lib/server/api.test.ts",
+		"mobile:dev": "npm run dev -w mobile",
+		"mobile:build": "npm run build -w mobile",
+		"mobile:check": "npm run check -w mobile"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-vercel": "7.0.5",
