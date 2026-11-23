@@ -20,6 +20,8 @@ export interface QuestionLogEntry {
 	 * named = the question named it, guessed = the model's guess, previous = same as the last answer.
 	 */
 	leagueFrom?: 'picked' | 'named' | 'guessed' | 'previous';
+	/** Where it was asked: the website or the mobile app. Older entries have none (the website). */
+	client?: 'web' | 'app';
 	/** Rule refs cited in the answer. */
 	citations?: string[];
 	/** Rule refs search returned, closest first, with distance. For checking retrieval. */

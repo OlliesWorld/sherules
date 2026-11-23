@@ -9,8 +9,10 @@ import {
 	TURSO_DATABASE_URL
 } from '$app/env/private';
 import { GoogleGenAI } from '@google/genai';
+import { dev } from '$app/env';
 import { createDb } from './db.ts';
 import { createEmbedder } from './embed.ts';
+import { installTokenKey } from './install-token.ts';
 import type { RagDeps } from './rag.ts';
 import type { Limiter } from './rate-limit.ts';
 import { redis } from './redis.ts';
@@ -31,6 +33,16 @@ export const ragDeps: RagDeps = {
 
 /** Daily limits, or null if Redis or the hashing secret isn't configured. */
 export const limiter: Limiter | null = redis && RATE_LIMIT_SECRET ? { counter: redis, secret: RATE_LIMIT_SECRET } : null;
+
+/**
+ * Key for signing the app's install tokens (install-token.ts), or null if RATE_LIMIT_SECRET
+ * isn't set. Local development falls back to a fixed key, so the app works without the secret.
+ */
+export const installKey: Buffer | null = RATE_LIMIT_SECRET
+	? installTokenKey(RATE_LIMIT_SECRET)
+	: dev
+		? installTokenKey('sherules-local-development-only')
+		: null;
 
 /** What's missing when `limiter` is null, for the server log. Names only, never values. */
 export const limiterMissing = [

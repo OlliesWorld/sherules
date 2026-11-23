@@ -5,6 +5,7 @@ import { generateAnswer, NOT_FOUND_ANSWER, type GeneratedAnswer } from './answer
 import type { Embedder } from './embed.ts';
 import { expandWithGlossary, findGlossaryEntries } from './glossary.ts';
 import { rewriteQuery } from './rewrite.ts';
+import type { Citation, RulebookAnswer } from '../types.ts';
 import { mergeResults, searchChunks, type RetrievedChunk } from './search.ts';
 
 /** The clients the RAG flow needs. Passed in so the app and the evals can each build their own. */
@@ -14,27 +15,8 @@ export interface RagDeps {
 	genai: GoogleGenAI;
 }
 
-export interface Citation {
-	ruleRef: string;
-	sourceName: string;
-	/** Official PDF, opened at the chunk's page. */
-	url: string;
-	page: number;
-	/** The cited chunk's rule text, shown under the rule number. */
-	excerpt: string;
-}
-
-export interface RulebookAnswer {
-	found: boolean;
-	answer: string;
-	citations: Citation[];
-	/** Every chunk sent to the model, cited or not, for checking retrieval. */
-	excerpts: (RetrievedChunk & { sourceName: string; url: string })[];
-	/** For tracing a "not found" (see GeneratedAnswer). Absent when nothing was retrieved. */
-	notes?: GeneratedAnswer['notes'];
-	/** How the question was searched, for tracing misses: the rewrite (if any) and glossary entries that matched. */
-	retrieval: { rewrittenQuery: string | null; glossaryTerms: string[] };
-}
+// Citation and RulebookAnswer live in lib/types.ts, shared with the pages and the mobile app.
+export type { Citation, RulebookAnswer } from '../types.ts';
 
 /**
  * The whole flow: search with the question as asked and with a rewrite in rulebook
