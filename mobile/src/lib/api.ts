@@ -79,7 +79,13 @@ async function installToken(): Promise<string> {
 }
 
 async function requestToken(): Promise<string> {
-	const response = await fetch(`${API_BASE}/api/v1/install`, { method: 'POST' });
+	// Sent as JSON: SvelteKit refuses a cross-site POST without a JSON content type as a
+	// possible form submission (CSRF protection), before the endpoint runs.
+	const response = await fetch(`${API_BASE}/api/v1/install`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: '{}'
+	});
 	const body = await response.json().catch(() => ({}));
 	if (!response.ok || typeof body.token !== 'string') {
 		throw new Error(body.error ?? 'Something went wrong. Please try again.');

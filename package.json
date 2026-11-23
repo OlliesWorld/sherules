@@ -22,7 +22,10 @@
 		"test": "tsx --test src/lib/server/agent-search.test.ts src/lib/server/voice.test.ts src/lib/server/citations.test.ts src/lib/server/glossary.test.ts src/lib/server/guess-league.test.ts src/lib/server/install-token.test.ts src/lib/server/rate-limit.test.ts src/lib/server/api.test.ts",
 		"mobile:dev": "npm run dev -w mobile",
 		"mobile:build": "npm run build -w mobile",
-		"mobile:check": "npm run check -w mobile"
+		"mobile:check": "npm run check -w mobile",
+		"mobile:sync": "npm run sync -w mobile",
+		"mobile:ios": "npm run ios -w mobile",
+		"mobile:android": "npm run android -w mobile"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-vercel": "7.0.5",

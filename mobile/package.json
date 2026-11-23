@@ -8,13 +8,19 @@
 		"build": "vite build",
 		"preview": "vite preview --port 5174 --strictPort",
 		"prepare": "svelte-kit sync || echo ''",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"sync": "vite build && cap sync",
+		"ios": "cap open ios",
+		"android": "cap open android",
+		"assets": "capacitor-assets generate --ios --android --iconBackgroundColor '#007872' --iconBackgroundColorDark '#007872' --splashBackgroundColor '#fbfaf6' --splashBackgroundColorDark '#060e18'"
 	},
 	"imports": {
 		"#lib/*": "./shared/*",
 		"#mobile/*": "./src/lib/*"
 	},
 	"devDependencies": {
+		"@capacitor/assets": "4.0.0",
+		"@capacitor/cli": "8.6.2",
 		"@sveltejs/adapter-static": "4.0.1",
 		"@sveltejs/kit": "3.4.0",
 		"@sveltejs/vite-plugin-svelte": "7.3.1",
@@ -27,9 +33,13 @@
 		"vite": "8.3.8"
 	},
 	"dependencies": {
+		"@capacitor/android": "8.6.2",
+		"@capacitor/app": "8.1.2",
 		"@capacitor/browser": "8.0.5",
 		"@capacitor/core": "8.6.2",
+		"@capacitor/ios": "8.6.2",
 		"@capacitor/preferences": "8.0.1",
+		"@capacitor/splash-screen": "8.0.2",
 		"@fontsource/archivo": "5.3.0",
 		"@fontsource/jetbrains-mono": "5.3.0",
 		"@fontsource/sora": "5.3.0"
