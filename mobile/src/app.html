@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<!-- viewport-fit=cover lets the app draw under the notch; the layout pads by the safe areas. -->
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<meta name="text-scale" content="scale" />
+		<!-- Sets light/dark before the page draws. Written by vite.config.ts. -->
+		<script src="%sveltekit.assets%/theme-init.js"></script>
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="tap">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>
