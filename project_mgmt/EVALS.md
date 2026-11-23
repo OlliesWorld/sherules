@@ -83,14 +83,14 @@ A label also matches the pieces of a split rule: `Rule 94.1` accepts `Rule 94.1 
 
 ### The question set
 
-76 questions: 59 the rulebooks should answer, and 17 they shouldn't. Every expected answer was checked against the rulebook text, and every expected ref was checked against the page's actual chunks, before it was added. The questions were written by us, not taken from real visitors yet (see Known limits). The six injection questions were added for Run 3; the terminology questions with the glossary, and the PWHL 2026-27 rule changes (neck guards, body checking, high-sticking the puck) in November 2026.
+77 questions: 60 the rulebooks should answer, and 17 they shouldn't. Every expected answer was checked against the rulebook text, and every expected ref was checked against the page's actual chunks, before it was added. The questions were written by us, not taken from real visitors yet (see Known limits). The six injection questions were added for Run 3; the terminology questions with the glossary, and the PWHL 2026-27 rule changes (neck guards, body checking, high-sticking the puck) in November 2026. `bb-wnba-timeouts` (also November 2026) is a question typed while testing the app, kept in its original lowercase, unpunctuated form: it was answered on one ask and "not found" on another, so it tracks how often that miss happens.
 
 | Page | Questions | Covers |
 |---|---|---|
 | Volleyball / NCAA | 6 | Substitutions, timeouts, deciding set, jewelry, libero |
 | Volleyball / Pro | 5 | Substitutions, hits, net faults, libero |
 | Basketball / NCAA | 8 | Shot clock, fouling out, bonus, backcourt count, WNBA terms (Reset, TV timeouts) |
-| Basketball / WNBA | 8 | Shot clock, fouling out, quarter and overtime length, Reset, TV timeouts |
+| Basketball / WNBA | 9 | Shot clock, fouling out, quarter and overtime length, timeouts, Reset, TV timeouts |
 | Soccer / NCAA | 6 | Game length, overtime, yellow and red cards, substitutions |
 | Soccer / NWSL | 7 | Substitutions, points, suspensions, goalkeeper, offside, concussion subs |
 | Rugby / All leagues | 7 | Ruck, try points, yellow cards, high tackles, sevens |
@@ -100,7 +100,7 @@ A label also matches the pieces of a split rule: `Rule 94.1` accepts `Rule 94.1 
 
 | Kind | Count | What it tests |
 |---|---|---|
-| Rule | 47 | Ordinary rules questions |
+| Rule | 48 | Ordinary rules questions |
 | Women's trap | 5 | Shared men's and women's books. The answer must give the women's rule: NCAA soccer substitution "moments" are Division I men only; body checking is prohibited in NCAA and USA Hockey women's play; the women's timeout interpretation; the experimental high-stick rule is conference play only |
 | Terminology | 4 | A term from another league ("Reset", "TV timeout"): the answer must name what this rulebook calls it, or say it has no such rule and give the closest one. See the glossary in `src/lib/server/glossary.ts` |
 | Sevens | 2 | Rugby sevens variations (yellow card length, match length) |
