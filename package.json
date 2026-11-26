@@ -43,7 +43,7 @@
 	"dependencies": {
 		"@google/genai": "2.32.0",
 		"@libsql/client": "0.18.0",
-		"@lucide/svelte": "1.77.0",
+		"@lucide/svelte": "1.78.0",
 		"@upstash/redis": "1.41.0",
 		"clsx": "2.1.1",
 		"livekit-client": "2.25.0",
